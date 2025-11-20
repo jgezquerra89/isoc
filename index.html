@@ -34,7 +34,8 @@
             overflow: hidden;
             user-select: none;
             -webkit-tap-highlight-color: transparent;
-            touch-action: manipulation;
+            /* IMPORTANT: This CSS property handles mobile zoom prevention natively */
+            touch-action: manipulation; 
             position: relative;
         }
 
@@ -342,7 +343,6 @@
                 <h2 class="text-white font-game text-lg">Select Union Rep</h2>
                 <button onclick="game.closeModal('manager-modal')" class="text-teal-200 hover:text-white"><i class="fas fa-times text-xl"></i></button>
             </div>
-            <!-- ADDED INSTRUCTION TEXT -->
             <div class="bg-teal-100 p-3 text-xs text-teal-900 text-center border-b border-teal-200 font-bold">
                 <i class="fas fa-info-circle mr-1"></i> Hire a Rep to AUTOMATE this business!
             </div>
@@ -531,7 +531,7 @@
             getNextLevelMultiplier() { return Math.pow(2, this.state.level); }
             getGenCost(id) { 
                 const g = GENERATORS_DATA.find(x => x.id === id);
-                if (id === 'taxes' && Number(this.state.generators[id]) === 0) return 0;
+                if (id === 'taxes' && this.state.generators[id] === 0) return 0;
                 return Math.floor(g.baseCost * Math.pow(1.15, this.state.generators[id]));
             }
             getGenMultiplier(id) {
@@ -1172,7 +1172,7 @@
                     const triggerArea = card.querySelector('.manual-trigger-area');
                     triggerArea.classList.add('cursor-pointer-active');
                     triggerArea.onclick = () => this.activateGenerator(g.id);
-                    triggerArea.addEventListener('touchend', (e) => e.preventDefault());
+                    // Removed touchend preventDefault which was blocking clicks on child elements (manager btn)
 
                     card.querySelector('.emoji').innerText = g.icon;
                     card.querySelector('.name').innerText = g.name;

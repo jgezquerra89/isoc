@@ -342,6 +342,7 @@
                 <h2 class="text-white font-game text-lg">Select Union Rep</h2>
                 <button onclick="game.closeModal('manager-modal')" class="text-teal-200 hover:text-white"><i class="fas fa-times text-xl"></i></button>
             </div>
+            <!-- ADDED INSTRUCTION TEXT -->
             <div class="bg-teal-100 p-3 text-xs text-teal-900 text-center border-b border-teal-200 font-bold">
                 <i class="fas fa-info-circle mr-1"></i> Hire a Rep to AUTOMATE this business!
             </div>
@@ -499,7 +500,7 @@
                 };
                 this.affordableTrackers = {};
                 this.manualUsageTrackers = {}; 
-                this.buyButtonPulseTrackers = {}; // New tracker for first unit buy nudge
+                this.buyButtonPulseTrackers = {}; 
                 this.buyInterval = null;
                 this.moneyPulseTimeout = null;
                 
@@ -530,7 +531,7 @@
             getNextLevelMultiplier() { return Math.pow(2, this.state.level); }
             getGenCost(id) { 
                 const g = GENERATORS_DATA.find(x => x.id === id);
-                if (id === 'taxes' && this.state.generators[id] === 0) return 0;
+                if (id === 'taxes' && Number(this.state.generators[id]) === 0) return 0;
                 return Math.floor(g.baseCost * Math.pow(1.15, this.state.generators[id]));
             }
             getGenMultiplier(id) {
@@ -598,12 +599,8 @@
             
             startPrestigeSequence() {
                 document.getElementById('prestige-modal').classList.add('hidden');
-                // Show Overlay
                 const overlay = document.getElementById('revolution-overlay');
                 overlay.classList.remove('hidden');
-                // Reflow handled by browser since we just removed hidden
-                
-                // Wait for animation duration (4s)
                 setTimeout(() => {
                     this.prestige();
                     overlay.classList.add('hidden');
@@ -688,10 +685,8 @@
             activateGenerator(id) {
                 if(this.prestigePending) return;
                 
-                // Check if purchased
                 if (this.state.generators[id] === 0) {
                      const card = document.getElementById(`card-${id}`);
-                     // TARGET ICON instead of card
                      const icon = card.querySelector('.ring-container');
                      this.showContextToast(icon, "Buy first!");
                      return;
@@ -704,20 +699,19 @@
                          const card = document.getElementById(`card-${id}`);
                          card.style.transform = "scale(0.98)";
                          setTimeout(() => card.style.transform = "scale(1)", 50);
-                         this.manualUsageTrackers[id] = null; // Reset tracker on use
+                         this.manualUsageTrackers[id] = null; 
                      }
                 }
             }
 
             startBuy(id) {
                 if(this.prestigePending) return;
-                // Use a flag to avoid multiple intervals
                 if (this.isBuying) return; 
                 this.isBuying = true;
 
                 this.buyGenerator(id);
                 this.buyInterval = setTimeout(() => {
-                    if (!this.isBuying) return; // Check if released during timeout
+                    if (!this.isBuying) return; 
                     this.buyInterval = setInterval(() => {
                         this.buyGenerator(id);
                     }, 100); 
@@ -787,7 +781,6 @@
                                 this.addInfluence(revenue * cycles);
                                 this.addUnhappiness(unhappiness * cycles);
                                 
-                                // Manual Cash Animation
                                 if (!hasManager) {
                                     this.animateCashBill(g.id);
                                 }
@@ -807,23 +800,19 @@
                 const card = document.getElementById(`card-${genId}`);
                 if (!card) return;
                 
-                // Start from progress bar end area
                 const progressBar = card.querySelector('.progress-fill');
                 const startRect = progressBar.getBoundingClientRect();
                 
-                // End at money container - Target the actual money text span for precision
                 const target = document.getElementById('influence-display');
                 const targetRect = target.getBoundingClientRect();
                 
-                // Calculate precise centers
                 const targetCenterX = targetRect.left + targetRect.width / 2;
                 const targetCenterY = targetRect.top + targetRect.height / 2;
 
                 const bill = document.createElement('div');
                 bill.className = 'flying-bill';
-                bill.innerText = '$'; // Updated to $ icon
+                bill.innerText = '$'; 
                 
-                // Start position
                 bill.style.left = `${startRect.right - 10}px`;
                 bill.style.top = `${startRect.top}px`;
                 document.body.appendChild(bill);
@@ -1097,13 +1086,10 @@
                     
                     // LOGIC FOR MANUAL GENERATOR WIGGLE
                     if (!activeMgrId && this.state.generators[g.id] > 0) {
-                        // If idle (not running)
                         if (this.state.progress[g.id] <= 0) {
-                             // If not being tracked, start tracking
                              if (!this.manualUsageTrackers[g.id]) {
                                  this.manualUsageTrackers[g.id] = now;
                              } else if (now - this.manualUsageTrackers[g.id] > 3000) {
-                                 // 3s passed, wiggle the ICON
                                  const card = document.getElementById(`card-${g.id}`);
                                  const iconContainer = card.querySelector('.ring-container');
                                  if (!iconContainer.classList.contains('animate-wiggle')) {
@@ -1111,7 +1097,6 @@
                                  }
                              }
                         } else {
-                             // Running, reset tracker
                              this.manualUsageTrackers[g.id] = null;
                              const card = document.getElementById(`card-${g.id}`);
                              const iconContainer = card.querySelector('.ring-container');
@@ -1148,7 +1133,6 @@
                             mgrBtn.classList.remove('animate-wiggle');
                         }
                     } else {
-                        // Force remove wiggle if managed
                         const mgrBtn = document.getElementById(`card-${g.id}`).querySelector('.manager-btn');
                         mgrBtn.classList.remove('animate-wiggle');
                         this.affordableTrackers[g.id] = null;
@@ -1170,7 +1154,6 @@
                              btn.classList.remove('animate-glow');
                         }
                     } else {
-                        // Already bought
                         this.buyButtonPulseTrackers[g.id] = null;
                         btn.classList.remove('animate-glow');
                     }
@@ -1188,28 +1171,24 @@
                     
                     const triggerArea = card.querySelector('.manual-trigger-area');
                     triggerArea.classList.add('cursor-pointer-active');
-                    
-                    // Handle tap specifically for mobile responsiveness
-                    triggerArea.addEventListener('touchstart', (e) => {
-                        e.preventDefault(); // Prevents ghost click and double-tap zoom
-                        this.activateGenerator(g.id);
-                    }, { passive: false });
-
-                    // Handle click for mouse
-                    triggerArea.addEventListener('click', (e) => {
-                        this.activateGenerator(g.id);
-                    });
+                    triggerArea.onclick = () => this.activateGenerator(g.id);
+                    triggerArea.addEventListener('touchend', (e) => e.preventDefault());
 
                     card.querySelector('.emoji').innerText = g.icon;
                     card.querySelector('.name').innerText = g.name;
                     const buyBtn = card.querySelector('.buy-btn');
                     buyBtn.id = `btn-${g.id}`;
                     
-                    buyBtn.addEventListener('mousedown', () => this.startBuy(g.id));
+                    buyBtn.addEventListener('mousedown', (e) => {
+                        if(e.type === 'touchstart') e.preventDefault();
+                        this.startBuy(g.id);
+                    });
                     buyBtn.addEventListener('touchstart', (e) => { e.preventDefault(); this.startBuy(g.id); });
                     buyBtn.addEventListener('mouseup', () => this.stopBuy());
                     buyBtn.addEventListener('mouseleave', () => this.stopBuy());
                     buyBtn.addEventListener('touchend', () => this.stopBuy());
+                    
+                    buyBtn.addEventListener('click', (e) => this.buyGenerator(g.id, e));
 
                     card.querySelector('.manager-btn').onclick = (e) => { e.stopPropagation(); this.openManagerModal(g.id); };
                     container.appendChild(clone);
@@ -1222,7 +1201,10 @@
                 if(!card) return;
                 const count = this.state.generators[id];
                 const cost = this.getGenCost(id);
-                card.querySelector('.cost').innerText = formatNumber(cost);
+                
+                const costText = cost === 0 ? "FREE!" : formatNumber(cost);
+                card.querySelector('.cost').innerText = costText;
+                
                 card.querySelector('.count').innerText = count;
                 card.querySelector('.revenue').innerText = "+" + formatNumber(this.getGenRevenue(id));
                 const unhappiness = this.getGenUnhappiness(id);

@@ -206,6 +206,7 @@
             transition: transform 0.1s ease-out, color 0.1s ease-out;
         }
         
+        /* Transition back to normal */
         .money-normal {
             color: white;
             transform: scale(1);
@@ -271,6 +272,7 @@
     <!-- Top Bar -->
     <header class="bg-teal-800 border-b-4 border-teal-900 p-2 z-20 shadow-xl relative">
         <div class="max-w-md mx-auto flex justify-between items-center relative">
+            
             <!-- Avatar -->
             <div class="relative group cursor-pointer" onclick="game.manualClick(event)">
                 <div class="w-16 h-16 rounded-full border-4 border-white shadow-lg overflow-hidden bg-yellow-300 relative z-10 avatar-container hover:scale-105 transition-transform">
@@ -282,6 +284,7 @@
                 <input type="file" id="avatar-upload" class="hidden" accept="image/*" onchange="game.handleAvatarUpload(event)">
                 <div class="absolute -bottom-2 -right-2 bg-orange-500 text-white text-xs font-bold px-2 py-0.5 rounded-full border-2 border-white z-20" id="level-badge">LVL 1</div>
             </div>
+
             <!-- Currencies -->
             <div class="flex-1 mx-2 flex flex-col gap-1">
                 <div class="flex gap-1">
@@ -303,6 +306,7 @@
                     </div>
                 </div>
             </div>
+
             <!-- Settings -->
             <div class="flex flex-col gap-1">
                 <button onclick="game.saveGame()" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded border-b-2 border-blue-800 active:translate-y-1">SAVE</button>
@@ -332,7 +336,6 @@
         </div>
     </nav>
 
-    <!-- Modals -->
     <div id="manager-modal" class="fixed inset-0 modal-backdrop z-50 hidden flex items-center justify-center px-4">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm overflow-hidden animate-bounce-in">
             <div class="bg-teal-800 p-4 flex justify-between items-center border-b-4 border-teal-900">
@@ -1185,35 +1188,28 @@
                     
                     const triggerArea = card.querySelector('.manual-trigger-area');
                     triggerArea.classList.add('cursor-pointer-active');
-                    triggerArea.onclick = () => this.activateGenerator(g.id);
-                    // Prevent double tap zoom issues by catching touch end
-                    triggerArea.addEventListener('touchend', (e) => e.preventDefault());
+                    
+                    // Handle tap specifically for mobile responsiveness
+                    triggerArea.addEventListener('touchstart', (e) => {
+                        e.preventDefault(); // Prevents ghost click and double-tap zoom
+                        this.activateGenerator(g.id);
+                    }, { passive: false });
+
+                    // Handle click for mouse
+                    triggerArea.addEventListener('click', (e) => {
+                        this.activateGenerator(g.id);
+                    });
 
                     card.querySelector('.emoji').innerText = g.icon;
                     card.querySelector('.name').innerText = g.name;
                     const buyBtn = card.querySelector('.buy-btn');
                     buyBtn.id = `btn-${g.id}`;
                     
-                    // Mouse/Touch events for continuous buy
-                    const startBuying = (e) => {
-                        if(e.type === 'touchstart') e.preventDefault(); // Stop scrolling/context menu
-                        this.startBuy(g.id);
-                    };
-                    
-                    buyBtn.addEventListener('mousedown', startBuying);
-                    buyBtn.addEventListener('touchstart', startBuying);
-                    
-                    const stopBuying = (e) => {
-                        if(e.type === 'touchend') e.preventDefault();
-                        this.stopBuy();
-                    };
-
-                    buyBtn.addEventListener('mouseup', stopBuying);
-                    buyBtn.addEventListener('mouseleave', stopBuying);
-                    buyBtn.addEventListener('touchend', stopBuying);
-                    
-                    // Add click for single tap fallback if hold fails
-                    buyBtn.addEventListener('click', (e) => this.buyGenerator(g.id, e));
+                    buyBtn.addEventListener('mousedown', () => this.startBuy(g.id));
+                    buyBtn.addEventListener('touchstart', (e) => { e.preventDefault(); this.startBuy(g.id); });
+                    buyBtn.addEventListener('mouseup', () => this.stopBuy());
+                    buyBtn.addEventListener('mouseleave', () => this.stopBuy());
+                    buyBtn.addEventListener('touchend', () => this.stopBuy());
 
                     card.querySelector('.manager-btn').onclick = (e) => { e.stopPropagation(); this.openManagerModal(g.id); };
                     container.appendChild(clone);

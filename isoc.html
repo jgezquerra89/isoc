@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- Viewport optimized for mobile: prevents zooming and forces full width -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <!-- iOS/Android App-like Behavior -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#00695C">
+    <meta name="mobile-web-app-capable" content="yes">
+
+    <title>Idle Socialist</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Titan+One&family=Roboto:wght@500;700;900&display=swap');
+
+        :root {
+            --game-teal: #4DB6AC;
+            --game-dark-teal: #00695C;
+            --game-orange: #FF9800;
+            --game-dark-orange: #E65100;
+            --game-border: #263238;
+            --card-bg: #80CBC4;
+            --ring-fill: #FFD700; /* Bright Yellow */
+            --ring-track: #004D40; /* Dark Teal */
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #B2DFDB;
+            background-image: radial-gradient(#80CBC4 15%, transparent 16%), radial-gradient(#80CBC4 15%, transparent 16%);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+            overflow: hidden;
+            user-select: none; /* Prevents text selection like an app */
+            -webkit-tap-highlight-color: transparent; /* Removes blue tap box on Android */
+            touch-action: manipulation; /* Improves touch response */
+            position: relative;
+        }
+
+        /* NYC Skyline Background Effect */
+        .city-skyline {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 45vh;
+            background-repeat: repeat-x;
+            background-size: cover;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.8;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 450' preserveAspectRatio='none'%3E%3Cpath fill='%23004D40' fill-opacity='0.15' d='M0,450V250h40v-80h30v80h20v-120h40v120h15v-60h35v60h25V100h50v150h20v-70h40v70h30V70h50v180h10v-50h40v50h20v-100h30v100h15v-70h35v70h20v-130h40v130h10V80h50v150h20v-60h30v60h20v-100h40v100h10v-50h30v50h20v-120h40v120h15v-80h35v80h25v-100h50v100h20v-60h40v60h30V110h50v110h10v-50h40v50h20v-90h30v90h15v-70h35v70h20v-140h40v140h10V90h50v140h20v-50h30v50h20v-80h40v80z'/%3E%3Cpath fill='%23004D40' fill-opacity='0.3' d='M0,450V300h30v-70h40v70h20v-100h50v100h10v-50h30v50h20v-80h40v80h25v-120h55v120h15v-60h35v60h30v-90h40v90h20v-70h50v70h10v-100h30v100h20v-60h40v60h25v-130h55v130h15v-50h35v50h30v-80h40v80h20v-100h50v100h10v-70h30v70h20v-90h40v90h25v-120h55v120h15v-60h35v60h30v-90h40v90h20v-100h50v100z'/%3E%3C/svg%3E");
+        }
+
+        /* Typography */
+        .text-stroke {
+            text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+        }
+        .font-game {
+            font-family: 'Titan One', cursive;
+        }
+
+        /* Buttons */
+        .btn-3d {
+            transition: all 0.05s;
+            border-bottom: 4px solid rgba(0,0,0,0.3);
+        }
+        .btn-3d:active {
+            transform: translateY(3px);
+            border-bottom: 1px solid rgba(0,0,0,0.3);
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
+        ::-webkit-scrollbar-thumb { background: var(--game-dark-teal); border-radius: 10px; }
+
+        /* Animations */
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-60px) scale(1.2); }
+        }
+        .floating-text {
+            position: absolute;
+            font-family: 'Titan One', cursive;
+            color: #81C784;
+            text-shadow: 2px 2px 0 #000;
+            pointer-events: none;
+            animation: floatUp 0.8s ease-out forwards;
+            z-index: 100;
+        }
+        /* Red text for unhappiness floating numbers */
+        .floating-text-bad {
+            color: #EF5350; 
+        }
+
+        .manager-grayscale {
+            filter: grayscale(100%) brightness(0.7);
+        }
+
+        /* FIXED PROGRESS RING */
+        .ring-container {
+            position: relative;
+            width: 4rem;
+            height: 4rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--ring-track);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+
+        .icon-progress-ring {
+            position: absolute;
+            inset: -3px;
+            border-radius: 50%;
+            z-index: 5;
+            background: conic-gradient(var(--ring-fill) 0deg, transparent 0deg);
+            -webkit-mask: radial-gradient(transparent 64%, black 65%);
+            mask: radial-gradient(transparent 64%, black 65%);
+        }
+        
+        .icon-inner {
+            position: relative;
+            z-index: 10;
+            background-color: #004D40;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid rgba(255,255,255,0.1);
+        }
+
+        /* Badge Animations */
+        .multiplier-badge {
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease;
+        }
+        .badge-hidden {
+            opacity: 0;
+            transform: scale(0) rotate(-45deg);
+        }
+        .badge-visible {
+            opacity: 1;
+            transform: scale(1) rotate(0deg);
+        }
+        
+        /* Modal */
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(2px);
+        }
+        
+        .progress-meter-fill {
+            transition: width 0.5s ease-in-out;
+        }
+    </style>
+</head>
+<body class="h-screen flex flex-col text-gray-900">
+
+    <!-- City Background -->
+    <div class="city-skyline"></div>
+
+    <!-- Top Bar -->
+    <header class="bg-teal-800 border-b-4 border-teal-900 p-2 z-20 shadow-xl relative">
+        <div class="max-w-md mx-auto flex justify-between items-center relative">
+            
+            <!-- Avatar -->
+            <div class="relative group cursor-pointer" onclick="game.manualClick(event)">
+                <div class="w-16 h-16 rounded-full border-4 border-white shadow-lg overflow-hidden bg-yellow-300 relative z-10 avatar-container hover:scale-105 transition-transform">
+                    <!-- Embedded SVG Avatar for Leader -->
+                    <img id="avatar-img" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' fill='%23FDD835'/%3E%3Ccircle cx='100' cy='100' r='80' fill='%238D5524'/%3E%3Cpath d='M50,80 Q100,20 150,80 L150,120 Q100,180 50,120 Z' fill='%238D5524'/%3E%3Cpath d='M40,80 Q100,-20 160,80 L160,100 L40,100 Z' fill='%231a1a1a'/%3E%3Crect x='50' y='140' width='100' height='60' fill='%2337474F' rx='20'/%3E%3Cpath d='M90,140 L110,140 L110,200 L90,200 Z' fill='%23FFFFFF'/%3E%3Ccircle cx='75' cy='100' r='8' fill='%23000000'/%3E%3Ccircle cx='125' cy='100' r='8' fill='%23000000'/%3E%3Cpath d='M70,120 Q100,140 130,120' stroke='%23000000' stroke-width='4' fill='none'/%3E%3Cpath d='M60,120 L140,120 L140,150 Q100,180 60,150 Z' fill='%231a1a1a'/%3E%3Cpath d='M55,90 L95,90' stroke='%231a1a1a' stroke-width='3'/%3E%3Cpath d='M105,90 L145,90' stroke='%231a1a1a' stroke-width='3'/%3E%3C/svg%3E" 
+                         class="w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-black bg-opacity-30 opacity-0 group-hover:opacity-100 flex items-center justify-center transition">
+                        <i class="fas fa-camera text-white"></i>
+                    </div>
+                </div>
+                <input type="file" id="avatar-upload" class="hidden" accept="image/*" onchange="game.handleAvatarUpload(event)">
+                <div class="absolute -bottom-2 -right-2 bg-orange-500 text-white text-xs font-bold px-2 py-0.5 rounded-full border-2 border-white z-20" id="level-badge">
+                    LVL 1
+                </div>
+            </div>
+
+            <!-- Currency -->
+            <div class="flex-1 mx-4">
+                <div class="bg-teal-900 rounded-full p-1 border-2 border-teal-600 relative shadow-inner">
+                    <div class="text-center text-white font-game text-xl tracking-wide relative z-10">
+                        <span class="text-green-400 mr-1">$</span>
+                        <span id="influence-display">0</span>
+                    </div>
+                    <div class="absolute -bottom-6 left-0 w-full text-center">
+                        <span class="bg-teal-700 text-teal-100 text-[10px] px-2 py-0.5 rounded-full font-bold border border-teal-500">
+                            <i class="fas fa-bolt text-yellow-300 text-[8px]"></i> <span id="ips-display">0.0</span> / sec
+                        </span>
+                    </div>
+                </div>
+                <!-- Unhappiness Meter (Small & below) -->
+                <div class="mt-6 relative h-6 bg-red-900 rounded-full border-2 border-red-700 shadow-sm overflow-hidden">
+                    <!-- Progress Fill -->
+                    <div class="absolute top-0 left-0 h-full bg-red-600 progress-meter-fill" id="unhappiness-bar" style="width: 0%"></div>
+                    <!-- Text -->
+                    <div class="absolute inset-0 flex items-center justify-center text-red-100 text-[10px] font-bold relative z-10">
+                        <span class="mr-1">😠</span> <span id="unhappiness-display">0</span> <span class="mx-1">/</span> <span id="unhappiness-limit">100k</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings -->
+            <div class="flex flex-col gap-1">
+                <button onclick="game.saveGame()" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded border-b-2 border-blue-800 active:border-b-0 active:translate-y-1">
+                    SAVE
+                </button>
+                <button onclick="game.hardReset()" class="bg-red-600 hover:bg-red-500 text-white text-xs font-bold px-2 py-1 rounded border-b-2 border-red-800 active:border-b-0 active:translate-y-1">
+                    RESET
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Game Area -->
+    <main class="flex-1 overflow-y-auto relative pb-24 pt-4 px-2 z-10" id="scroll-container">
+        <div class="max-w-md mx-auto space-y-3" id="generator-container">
+            <!-- Generators injected here -->
+        </div>
+    </main>
+
+    <!-- Bottom Navigation -->
+    <nav class="bg-teal-800 border-t-4 border-teal-900 p-2 fixed bottom-0 w-full z-30 shadow-2xl">
+        <div class="max-w-md mx-auto flex justify-around">
+            <button class="flex flex-col items-center text-white opacity-100 scale-110 transition">
+                <i class="fas fa-industry text-2xl mb-1 text-yellow-400 drop-shadow-md"></i>
+                <span class="text-[10px] font-bold uppercase">Production</span>
+            </button>
+            <button class="flex flex-col items-center text-teal-300 hover:text-white transition" onclick="game.showToast('Tap Manager icons to hire!')">
+                <i class="fas fa-user-tie text-2xl mb-1 drop-shadow-md"></i>
+                <span class="text-[10px] font-bold uppercase">Reps</span>
+            </button>
+            <button class="flex flex-col items-center text-teal-300 hover:text-white transition" onclick="game.manualClick({clientX: window.innerWidth/2, clientY: window.innerHeight/2})">
+                <i class="fas fa-bullhorn text-2xl mb-1 drop-shadow-md"></i>
+                <span class="text-[10px] font-bold uppercase">Organize</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Modal for Manager Selection -->
+    <div id="manager-modal" class="fixed inset-0 modal-backdrop z-50 hidden flex items-center justify-center px-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm overflow-hidden animate-bounce-in">
+            <div class="bg-teal-800 p-4 flex justify-between items-center border-b-4 border-teal-900">
+                <h2 class="text-white font-game text-lg">Select Union Rep</h2>
+                <button onclick="game.closeModal()" class="text-teal-200 hover:text-white"><i class="fas fa-times text-xl"></i></button>
+            </div>
+            <div class="p-4 bg-teal-50 max-h-[60vh] overflow-y-auto" id="modal-list">
+                <!-- Manager options injected here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Prestige/Revolution -->
+    <div id="prestige-modal" class="fixed inset-0 modal-backdrop z-50 hidden flex items-center justify-center px-4">
+        <div class="bg-red-900 rounded-xl shadow-2xl w-full max-w-sm overflow-hidden border-4 border-yellow-500 animate-bounce-in text-center">
+            <div class="p-6 bg-red-800 text-white">
+                <i class="fas fa-fist-raised text-6xl text-yellow-400 mb-4 animate-pulse"></i>
+                <h2 class="font-game text-2xl mb-2 uppercase text-yellow-300">Revolution Imminent!</h2>
+                <p class="text-sm mb-4">The people are too unhappy with the current system. It's time to advance history to the next stage!</p>
+                
+                <div class="bg-red-950 rounded p-3 mb-4 border border-red-600">
+                    <div class="text-xs uppercase text-red-300">Next Stage Bonus</div>
+                    <div class="text-2xl font-bold text-green-400" id="prestige-bonus-display">Production x2</div>
+                </div>
+
+                <p class="text-xs text-red-200 mb-4 italic">Resets Money, Buildings & Unhappiness.</p>
+
+                <button onclick="game.prestige()" class="w-full bg-yellow-500 hover:bg-yellow-400 text-red-900 font-black text-lg py-3 rounded shadow-[0_4px_0_rgb(180,83,9)] active:translate-y-1 active:shadow-none transition-all">
+                    ADVANCE TO LEVEL <span id="next-level-display">2</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-container" class="fixed bottom-24 left-1/2 transform -translate-x-1/2 flex flex-col gap-2 pointer-events-none z-50 w-full max-w-xs px-4"></div>
+
+    <!-- TEMPLATES -->
+    <template id="generator-template">
+        <div class="bg-teal-700 rounded-xl p-2 shadow-[0_4px_0_rgba(0,0,0,0.2)] border-2 border-teal-900 relative overflow-hidden group">
+            <div class="flex items-center gap-2 mb-2">
+                <!-- Left: Icon & Ring -->
+                <div class="ring-container flex-shrink-0">
+                    <div class="icon-progress-ring"></div>
+                    <div class="icon-inner shadow-inner">
+                        <span class="emoji text-3xl">🥕</span>
+                    </div>
+                    <div class="absolute -bottom-1 -right-1 bg-blue-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded border border-white z-20 shadow-sm">
+                        <span class="count">0</span>
+                    </div>
+                    <div class="absolute -top-2 -left-2 bg-yellow-400 text-black text-[10px] font-black px-1.5 py-0.5 rounded-full border border-white z-30 shadow-sm badge-hidden multiplier-badge pointer-events-none">
+                        x2
+                    </div>
+                </div>
+
+                <!-- Center: Info -->
+                <div class="flex-1 min-w-0 pl-1">
+                    <div class="flex justify-between items-end mb-1">
+                        <h3 class="font-bold text-white text-sm truncate name text-shadow-sm">Garden</h3>
+                        <!-- UPDATED: Revenue & Unhappiness Stack -->
+                        <div class="text-right">
+                            <div class="text-xs text-yellow-300 font-mono font-bold revenue">$0</div>
+                            <div class="text-[10px] text-red-300 font-bold unhappiness-gen flex items-center justify-end gap-1 opacity-80">
+                                <span>+0</span> <span class="text-[8px]">😠</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="h-6 bg-teal-900 rounded-full border-2 border-teal-600 relative overflow-hidden">
+                        <div class="progress-fill bg-gradient-to-r from-green-400 to-green-500 h-full w-0 absolute top-0 left-0 border-r-2 border-green-300"></div>
+                        <div class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white drop-shadow-md timer-text z-10">00:00:00</div>
+                    </div>
+                    <div class="text-[9px] text-teal-200 text-right mt-0.5 pr-1 next-bonus-text">Next x2 at 10</div>
+                </div>
+
+                <!-- Right: Manager -->
+                <div class="flex-shrink-0 relative">
+                    <button class="manager-btn w-14 h-14 rounded-full bg-yellow-100 border-4 border-gray-400 overflow-hidden hover:scale-105 active:scale-95 transition relative manager-grayscale shadow-md">
+                        <img src="" class="w-full h-full object-cover manager-img">
+                        <div class="manager-lock absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                            <i class="fas fa-lock text-white text-xs"></i>
+                        </div>
+                    </button>
+                    <div class="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-gray-700 text-white text-[8px] px-1 rounded whitespace-nowrap border border-gray-500 z-20 manager-label shadow-sm">
+                        Hire
+                    </div>
+                </div>
+            </div>
+
+            <button class="buy-btn btn-3d w-full bg-orange-500 hover:bg-orange-400 text-white font-bold py-2 px-4 rounded-lg border-b-4 border-orange-700 flex items-center justify-between text-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:border-none disabled:translate-y-1">
+                <span class="uppercase text-[10px] tracking-wider opacity-90">Buy x1</span>
+                <span class="flex items-center gap-1 text-lg font-game text-stroke cost">$15</span>
+            </button>
+        </div>
+    </template>
+
+    <script>
+        /* --- GAME DATA --- */
+        const GENERATORS_DATA = [
+            { id: "taxes", name: "Tax Collection", icon: "💰", baseCost: 15, baseRevenue: 1, baseUnhappiness: 1, cycleTime: 600 },
+            { id: "workshop", name: "Artisan Workshop", icon: "🔨", baseCost: 100, baseRevenue: 10, baseUnhappiness: 10, cycleTime: 3000 },
+            { id: "zamdani_care", name: "Zamdani Care", icon: "🏥", baseCost: 1100, baseRevenue: 80, baseUnhappiness: 100, cycleTime: 6000 },
+            { id: "foodstores", name: "State Foodstores", icon: "🥫", baseCost: 12000, baseRevenue: 470, baseUnhappiness: 1000, cycleTime: 12000 },
+            { id: "homeless_transit", name: "Homeless Transit", icon: "🚌", baseCost: 130000, baseRevenue: 2600, baseUnhappiness: 10000, cycleTime: 24000 },
+            { id: "friendship_grid", name: "Friendship Grid", icon: "⚡", baseCost: 1400000, baseRevenue: 14000, baseUnhappiness: 100000, cycleTime: 96000 },
+            { id: "rent_control", name: "Rent Control", icon: "🏠", baseCost: 20000000, baseRevenue: 100000, baseUnhappiness: 1000000, cycleTime: 384000 }
+        ];
+
+        // 3 Tiers of Managers per Industry
+        const MANAGER_OPTIONS = {
+            "taxes": [
+                { id: "taxes_1", name: "Auditor Andy", cost: 500, mult: 2, img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Andy" },
+                { id: "taxes_2", name: "Taxman Ted", cost: 5000, mult: 10, img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Ted" },
+                { id: "taxes_3", name: "Comptroller Cat", cost: 50000, mult: 50, img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Cat" }
+            ],
+            "workshop": [
+                { id: "workshop_1", name: "Apprentice Al", cost: 10000, mult: 2, img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Al" },
+                { id: "workshop_2", name: "Crafter Ken", cost: 100000, mult: 10, img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Ken" },
+                { id: "workshop_3", name: "Master Mary", cost: 1000000, mult: 50, img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Mary" }
+            ],
+            "zamdani_care": [
+                { id: "care_1", name: "Nurse Nancy", cost: 50000, mult: 2, img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Nancy" },
+                { id: "care_2", name: "Dr. Dave", cost: 500000, mult: 10, img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Dave" },
+                { id: "care_3", name: "Surgeon Sarah", cost: 5000000, mult: 50, img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah" }
+            ],
+            "foodstores": [
+                { id: "food_1", name: "Stocker Sam", cost: 200000, mult: 2, img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sam" },
+                { id: "food_2", name: "Manager Mike", cost: 2000000, mult: 10, img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Mike" },
+                { id: "food_3", name: "Director Deb", cost: 20000000, mult: 50, img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Deb" }
+            ],
+            "homeless_transit": [
+                { id: "transit_1", name: "Trainee Tom", cost: 1000000, mult: 2, img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Tom" },
+                { id: "transit_2", name: "Driver Dan", cost: 10000000, mult: 10, img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Dan" },
+                { id: "transit_3", name: "Pilot Pete", cost: 100000000, mult: 50, img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Pete" }
+            ],
+            "friendship_grid": [
+                { id: "energy_1", name: "Sparky Sam", cost: 5000000, mult: 2, img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sam" },
+                { id: "energy_2", name: "Tech Tina", cost: 50000000, mult: 10, img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Tina" },
+                { id: "energy_3", name: "Eng. Earl", cost: 500000000, mult: 50, img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Earl" }
+            ],
+            "rent_control": [
+                { id: "housing_1", name: "Inspector Ivy", cost: 20000000, mult: 2, img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Ivy" },
+                { id: "housing_2", name: "Planner Paul", cost: 200000000, mult: 10, img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Paul" },
+                { id: "housing_3", name: "Director Don", cost: 2000000000, mult: 50, img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Don" }
+            ]
+        };
+
+        /* --- UTILS --- */
+        function formatNumber(num) {
+            if (num >= 1e12) return "$" + (num / 1e12).toFixed(2) + "T";
+            if (num >= 1e9) return "$" + (num / 1e9).toFixed(2) + "B";
+            if (num >= 1e6) return "$" + (num / 1e6).toFixed(2) + "M";
+            if (num >= 1e3) return "$" + (num / 1e3).toFixed(2) + "k";
+            return "$" + Math.floor(num).toLocaleString();
+        }
+
+        function formatUnhappiness(num) {
+             if (num >= 1e12) return (num / 1e12).toFixed(2) + "T";
+            if (num >= 1e9) return (num / 1e9).toFixed(2) + "B";
+            if (num >= 1e6) return (num / 1e6).toFixed(2) + "M";
+            if (num >= 1e3) return (num / 1e3).toFixed(2) + "k";
+            return Math.floor(num).toLocaleString();
+        }
+
+        function formatTime(ms) {
+            if (ms < 1000) return (ms/1000).toFixed(1) + "s";
+            let s = Math.ceil(ms / 1000);
+            if (s < 60) return s + "s";
+            let m = Math.floor(s / 60);
+            s = s % 60;
+            if (m < 60) return `${m}m ${s}s`;
+            let h = Math.floor(m / 60);
+            m = m % 60;
+            return `${h}h ${m}m`;
+        }
+
+        /* --- GAME CLASS --- */
+        class Game {
+            constructor() {
+                this.state = {
+                    influence: 0,
+                    unhappiness: 0, 
+                    level: 1, // NEW: Current Level
+                    prestigeMultiplier: 1, // NEW: Global Bonus
+                    lifetime: 0,
+                    generators: {},
+                    activeManagers: {}, 
+                    progress: {},
+                    customAvatar: null
+                };
+                
+                GENERATORS_DATA.forEach(g => {
+                    this.state.generators[g.id] = 0;
+                    this.state.progress[g.id] = 0;
+                    this.state.activeManagers[g.id] = null;
+                });
+
+                this.lastTick = Date.now();
+                this.prestigePending = false; // Flag to stop production while modal is open
+            }
+
+            init() {
+                this.loadGame();
+                this.renderGenerators();
+                this.startGameLoop();
+                this.updateUI();
+                this.updateLevelBadge();
+                
+                if (this.state.customAvatar) {
+                    document.getElementById('avatar-img').src = this.state.customAvatar;
+                }
+                document.querySelector('.avatar-container').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    document.getElementById('avatar-upload').click();
+                });
+            }
+
+            /* --- LOGIC --- */
+            getUnhappinessThreshold() {
+                // Base threshold 25,000. Scales 10x per level.
+                // Level 1: 25k, Level 2: 250k, Level 3: 2.5M
+                return 25000 * Math.pow(10, this.state.level - 1);
+            }
+            
+            getNextLevelMultiplier() {
+                // Level 1->2 = x2
+                // Level 2->3 = x4
+                // Level 3->4 = x8
+                return Math.pow(2, this.state.level);
+            }
+
+            getGenCost(id) {
+                const g = GENERATORS_DATA.find(x => x.id === id);
+                return Math.floor(g.baseCost * Math.pow(1.15, this.state.generators[id]));
+            }
+
+            getGenMultiplier(id) {
+                const count = this.state.generators[id];
+                let multipliers = 0;
+                if (count >= 10) multipliers++;
+                if (count >= 25) multipliers++;
+                if (count >= 50) multipliers++;
+                if (count >= 100) multipliers++;
+                if (count > 100) multipliers += Math.floor((count - 100) / 50);
+                
+                let val = Math.pow(2, multipliers);
+                return val;
+            }
+
+            getManagerMultiplier(industryId) {
+                const activeId = this.state.activeManagers[industryId];
+                if (!activeId) return 1;
+                
+                const options = MANAGER_OPTIONS[industryId];
+                const mgr = options.find(m => m.id === activeId);
+                return mgr ? mgr.mult : 1;
+            }
+
+            getGenRevenue(id) {
+                const g = GENERATORS_DATA.find(x => x.id === id);
+                let count = this.state.generators[id];
+                let rev = g.baseRevenue * count;
+                
+                rev *= this.getManagerMultiplier(id);
+                rev *= this.getGenMultiplier(id);
+                rev *= this.state.prestigeMultiplier; // APPLY PRESTIGE BONUS
+                
+                return rev;
+            }
+            
+            getGenUnhappiness(id) {
+                const g = GENERATORS_DATA.find(x => x.id === id);
+                let count = this.state.generators[id];
+                return g.baseUnhappiness * count;
+            }
+
+            getNextMilestone(id) {
+                const count = this.state.generators[id];
+                if (count < 10) return 10;
+                if (count < 25) return 25;
+                if (count < 50) return 50;
+                if (count < 100) return 100;
+                return Math.ceil((Math.max(count, 100) + 1) / 50) * 50;
+            }
+
+            getPrevMilestone(id) {
+                const count = this.state.generators[id];
+                if (count < 10) return 0;
+                if (count < 25) return 10;
+                if (count < 50) return 25;
+                if (count < 100) return 50;
+                return Math.floor((count - 1) / 50) * 50;
+            }
+
+            /* --- PRESTIGE --- */
+            checkPrestigeCondition() {
+                if (this.prestigePending) return;
+                
+                const threshold = this.getUnhappinessThreshold();
+                if (this.state.unhappiness >= threshold) {
+                    this.prestigePending = true;
+                    this.showPrestigeModal();
+                }
+            }
+
+            showPrestigeModal() {
+                const modal = document.getElementById('prestige-modal');
+                const nextBonus = this.getNextLevelMultiplier();
+                const nextLevel = this.state.level + 1;
+                
+                document.getElementById('prestige-bonus-display').innerText = `Production x${nextBonus}`;
+                document.getElementById('next-level-display').innerText = nextLevel;
+                
+                modal.classList.remove('hidden');
+            }
+
+            prestige() {
+                // 1. Update Permanent Stats
+                this.state.level++;
+                this.state.prestigeMultiplier = Math.pow(2, this.state.level - 1);
+
+                // 2. Reset Current Run Stats
+                this.state.influence = 0;
+                this.state.unhappiness = 0;
+                this.state.lifetime = 0;
+                
+                // 3. Reset Generators & Managers
+                GENERATORS_DATA.forEach(g => {
+                    this.state.generators[g.id] = 0;
+                    this.state.progress[g.id] = 0;
+                    this.state.activeManagers[g.id] = null;
+                });
+
+                // 4. Save & Reload UI
+                this.saveGame();
+                document.getElementById('prestige-modal').classList.add('hidden');
+                this.prestigePending = false;
+                
+                // 5. Refresh Everything
+                this.renderGenerators(); // Re-render to clear manager icons/counts
+                this.updateUI();
+                this.updateLevelBadge();
+                this.showToast(`Revolution Successful! Production x${this.state.prestigeMultiplier}`);
+            }
+
+            updateLevelBadge() {
+                const el = document.getElementById('level-badge');
+                el.innerText = `LVL ${this.state.level}`;
+                if(this.state.level > 1) {
+                    el.classList.add('bg-purple-600', 'border-purple-400');
+                    el.classList.remove('bg-orange-500');
+                }
+            }
+
+            /* --- ACTIONS --- */
+            manualClick(e) {
+                if(this.prestigePending) return;
+                
+                let totalIPS = 0;
+                GENERATORS_DATA.forEach(g => {
+                    if(this.state.generators[g.id] > 0) {
+                        totalIPS += this.getGenRevenue(g.id) / (g.cycleTime/1000);
+                    }
+                });
+                
+                // Min 1, scaling with production
+                const val = 1 + (totalIPS * 0.05);
+                this.addInfluence(val);
+                this.spawnFloatText(e.clientX, e.clientY, `+${formatNumber(val)}`);
+                
+                const img = document.getElementById('avatar-img');
+                img.style.transform = "scale(0.9)";
+                setTimeout(()=>img.style.transform = "scale(1)", 50);
+            }
+
+            addInfluence(amt) {
+                this.state.influence += amt;
+                this.state.lifetime += amt;
+                document.getElementById('influence-display').innerText = formatNumber(this.state.influence).replace("$", "");
+            }
+            
+            addUnhappiness(amt) {
+                this.state.unhappiness += amt;
+                this.updateHeader(); // Force update bars
+                this.checkPrestigeCondition();
+            }
+
+            buyGenerator(id) {
+                if(this.prestigePending) return;
+                
+                const cost = this.getGenCost(id);
+                if(this.state.influence >= cost) {
+                    const prevMult = this.getGenMultiplier(id);
+                    this.state.influence -= cost;
+                    this.state.generators[id]++;
+                    const newMult = this.getGenMultiplier(id);
+                    
+                    if(this.state.generators[id] === 1) this.state.progress[id] = 0;
+                    
+                    this.updateCardUI(id);
+                    this.updateHeader();
+                    
+                    if (newMult > prevMult) {
+                        this.triggerBadge(id, newMult);
+                    }
+                }
+            }
+
+            /* --- ENGINE --- */
+            startGameLoop() {
+                const loop = () => {
+                    const now = Date.now();
+                    const dt = now - this.lastTick;
+                    this.lastTick = now;
+                    
+                    // Stop processing if level ended
+                    if (!this.prestigePending && dt > 0) {
+                        this.processProduction(dt);
+                        this.updateProgressBars();
+                    }
+                    requestAnimationFrame(loop);
+                };
+                requestAnimationFrame(loop);
+                setInterval(() => this.checkAffordability(), 200);
+                setInterval(() => this.saveGame(), 30000);
+            }
+
+            processProduction(dt) {
+                GENERATORS_DATA.forEach(g => {
+                    const count = this.state.generators[g.id];
+                    if(count > 0) {
+                        this.state.progress[g.id] += dt;
+                        if(this.state.progress[g.id] >= g.cycleTime) {
+                            const revenue = this.getGenRevenue(g.id);
+                            const unhappiness = this.getGenUnhappiness(g.id);
+                            const cycles = Math.floor(this.state.progress[g.id] / g.cycleTime);
+                            
+                            this.addInfluence(revenue * cycles);
+                            this.addUnhappiness(unhappiness * cycles);
+                            
+                            this.state.progress[g.id] %= g.cycleTime;
+                        }
+                    }
+                });
+            }
+
+            /* --- UI CORE --- */
+            updateHeader() {
+                // 1. Money
+                document.getElementById('influence-display').innerText = formatNumber(this.state.influence).replace("$", "");
+                
+                // 2. Unhappiness Meter
+                const unh = this.state.unhappiness;
+                const limit = this.getUnhappinessThreshold();
+                const pct = Math.min(100, (unh / limit) * 100);
+                
+                document.getElementById('unhappiness-display').innerText = formatUnhappiness(unh);
+                document.getElementById('unhappiness-limit').innerText = formatUnhappiness(limit);
+                document.getElementById('unhappiness-bar').style.width = `${pct}%`;
+                
+                // 3. IPS
+                let totalIPS = 0;
+                GENERATORS_DATA.forEach(g => {
+                    if(this.state.generators[g.id] > 0) {
+                        totalIPS += this.getGenRevenue(g.id) / (g.cycleTime/1000);
+                    }
+                });
+                document.getElementById('ips-display').innerText = formatNumber(totalIPS);
+            }
+
+            updateProgressBars() {
+                GENERATORS_DATA.forEach(g => {
+                    const card = document.getElementById(`card-${g.id}`);
+                    if(!card) return;
+                    const count = this.state.generators[g.id];
+                    const bar = card.querySelector('.progress-fill');
+                    const txt = card.querySelector('.timer-text');
+                    if(count > 0) {
+                        const prog = this.state.progress[g.id];
+                        const pct = Math.min(100, (prog / g.cycleTime) * 100);
+                        bar.style.width = `${pct}%`;
+                        if(g.cycleTime < 300) {
+                            txt.innerText = "FLOWING";
+                            bar.style.width = "100%";
+                        } else {
+                            txt.innerText = formatTime(g.cycleTime - prog);
+                        }
+                    } else {
+                        bar.style.width = '0%';
+                        txt.innerText = formatTime(g.cycleTime);
+                    }
+                });
+            }
+            
+            openManagerModal(industryId) {
+                const modal = document.getElementById('manager-modal');
+                const list = document.getElementById('modal-list');
+                const options = MANAGER_OPTIONS[industryId];
+                list.innerHTML = '';
+                options.forEach(mgr => {
+                    const activeId = this.state.activeManagers[industryId];
+                    const isHired = activeId === mgr.id;
+                    const div = document.createElement('div');
+                    div.className = "bg-white p-3 rounded-lg shadow-sm mb-2 border border-gray-200 flex items-center justify-between";
+                    div.innerHTML = `
+                        <div class="flex items-center gap-3">
+                            <img src="${mgr.img}" class="w-12 h-12 rounded-full border-2 border-teal-500">
+                            <div>
+                                <div class="font-bold text-gray-800">${mgr.name}</div>
+                                <div class="text-xs font-bold text-orange-600">x${mgr.mult} Production</div>
+                            </div>
+                        </div>
+                        <button class="btn-hire px-3 py-1.5 rounded text-xs font-bold uppercase shadow-sm transition ${isHired ? 'bg-green-100 text-green-700 cursor-default' : 'bg-teal-600 text-white hover:bg-teal-500 btn-3d'}" 
+                                ${isHired ? 'disabled' : ''}
+                                onclick="game.hireManager('${industryId}', '${mgr.id}', ${mgr.cost})">
+                            ${isHired ? 'Active' : `${formatNumber(mgr.cost)}`}
+                        </button>
+                    `;
+                    list.appendChild(div);
+                });
+                modal.classList.remove('hidden');
+            }
+            closeModal() {
+                document.getElementById('manager-modal').classList.add('hidden');
+            }
+            hireManager(industryId, mgrId, cost) {
+                if (this.state.influence >= cost) {
+                    this.state.influence -= cost;
+                    this.state.activeManagers[industryId] = mgrId;
+                    this.updateHeader();
+                    this.updateCardUI(industryId);
+                    this.closeModal();
+                    this.showToast("Manager Hired!");
+                } else {
+                    this.showToast("Not enough funds!");
+                }
+            }
+            checkAffordability() {
+                if(this.prestigePending) return;
+                GENERATORS_DATA.forEach(g => {
+                    const btn = document.getElementById(`btn-${g.id}`);
+                    const cost = this.getGenCost(g.id);
+                    btn.disabled = this.state.influence < cost;
+                    if (this.state.influence < cost) btn.classList.add('opacity-50');
+                    else btn.classList.remove('opacity-50');
+                });
+            }
+            renderGenerators() {
+                const container = document.getElementById('generator-container');
+                const tmpl = document.getElementById('generator-template');
+                container.innerHTML = '';
+                GENERATORS_DATA.forEach(g => {
+                    const clone = tmpl.content.cloneNode(true);
+                    const card = clone.querySelector('div');
+                    card.id = `card-${g.id}`;
+                    card.querySelector('.emoji').innerText = g.icon;
+                    card.querySelector('.name').innerText = g.name;
+                    card.querySelector('.buy-btn').id = `btn-${g.id}`;
+                    card.querySelector('.buy-btn').onclick = () => this.buyGenerator(g.id);
+                    card.querySelector('.manager-btn').onclick = () => this.openManagerModal(g.id);
+                    container.appendChild(clone);
+                    this.updateCardUI(g.id);
+                });
+            }
+            updateCardUI(id) {
+                const card = document.getElementById(`card-${id}`);
+                if(!card) return;
+                const count = this.state.generators[id];
+                const cost = this.getGenCost(id);
+                card.querySelector('.cost').innerText = formatNumber(cost);
+                card.querySelector('.count').innerText = count;
+                card.querySelector('.revenue').innerText = "+" + formatNumber(this.getGenRevenue(id));
+                const unhappiness = this.getGenUnhappiness(id);
+                card.querySelector('.unhappiness-gen span:first-child').innerText = "+" + formatUnhappiness(unhappiness);
+                const nextMile = this.getNextMilestone(id);
+                const prevMile = this.getPrevMilestone(id);
+                let pct = 0;
+                if (nextMile > 0) {
+                    pct = ((count - prevMile) / (nextMile - prevMile)) * 100;
+                    pct = Math.min(100, Math.max(0, pct));
+                }
+                card.querySelector('.next-bonus-text').innerText = `Next x2 at ${nextMile}`;
+                const ring = card.querySelector('.icon-progress-ring');
+                const deg = (pct / 100) * 360;
+                ring.style.background = `conic-gradient(var(--ring-fill) ${deg}deg, transparent 0deg)`;
+                const activeMgrId = this.state.activeManagers[id];
+                const mgrBtn = card.querySelector('.manager-btn');
+                const mgrLabel = card.querySelector('.manager-label');
+                const mgrImg = card.querySelector('.manager-img');
+                if (activeMgrId) {
+                    const opts = MANAGER_OPTIONS[id];
+                    const activeMgr = opts.find(m => m.id === activeMgrId);
+                    mgrBtn.classList.remove('manager-grayscale');
+                    mgrBtn.querySelector('.manager-lock').classList.add('hidden');
+                    mgrImg.src = activeMgr.img;
+                    mgrLabel.innerText = "x" + activeMgr.mult;
+                    mgrLabel.classList.replace('bg-gray-700', 'bg-green-600');
+                } else {
+                    const defaultMgr = MANAGER_OPTIONS[id][0];
+                    mgrBtn.classList.add('manager-grayscale');
+                    mgrBtn.querySelector('.manager-lock').classList.remove('hidden');
+                    mgrImg.src = defaultMgr.img;
+                    mgrLabel.innerText = "Hire";
+                    mgrLabel.classList.replace('bg-green-600', 'bg-gray-700');
+                }
+            }
+            triggerBadge(id, multiplierVal) {
+                const card = document.getElementById(`card-${id}`);
+                if(card) {
+                    const badge = card.querySelector('.multiplier-badge');
+                    badge.innerText = 'x' + multiplierVal;
+                    badge.classList.remove('badge-visible');
+                    badge.classList.add('badge-hidden');
+                    void badge.offsetWidth; 
+                    badge.classList.remove('badge-hidden');
+                    badge.classList.add('badge-visible');
+                    setTimeout(() => {
+                        badge.classList.remove('badge-visible');
+                        badge.classList.add('badge-hidden');
+                    }, 3000);
+                }
+            }
+            handleAvatarUpload(e) {
+                const file = e.target.files[0];
+                if(file) {
+                    const reader = new FileReader();
+                    reader.onload = (evt) => {
+                        this.state.customAvatar = evt.target.result;
+                        document.getElementById('avatar-img').src = this.state.customAvatar;
+                        this.saveGame();
+                        this.showToast('New Leader Uploaded!');
+                    };
+                    reader.readAsDataURL(file);
+                }
+            }
+            spawnFloatText(x, y, txt) {
+                const el = document.createElement('div');
+                el.className = 'floating-text';
+                el.innerText = txt;
+                el.style.left = (x - 20) + 'px';
+                el.style.top = (y - 40) + 'px';
+                document.body.appendChild(el);
+                setTimeout(() => el.remove(), 800);
+            }
+            showToast(msg) {
+                const con = document.getElementById('toast-container');
+                const el = document.createElement('div');
+                el.className = 'bg-gray-800 text-white text-xs font-bold px-4 py-2 rounded shadow-lg text-center border-2 border-gray-600';
+                el.innerText = msg;
+                con.appendChild(el);
+                setTimeout(() => el.remove(), 2000);
+            }
+            saveGame() {
+                try {
+                    localStorage.setItem('idleSocialistV7', JSON.stringify(this.state));
+                } catch(e) {
+                    const noImg = {...this.state, customAvatar: null};
+                    localStorage.setItem('idleSocialistV7', JSON.stringify(noImg));
+                }
+            }
+            loadGame() {
+                const save = localStorage.getItem('idleSocialistV7') || localStorage.getItem('idleSocialistV6');
+                if(save) {
+                    try {
+                        const d = JSON.parse(save);
+                        this.state = {...this.state, ...d};
+                        
+                        // Ensure new fields
+                        if (!this.state.level) this.state.level = 1;
+                        if (!this.state.prestigeMultiplier) this.state.prestigeMultiplier = 1;
+
+                    } catch(e) { console.log('Save corrupted'); }
+                }
+            }
+            hardReset() {
+                if(confirm("Restart the revolution?")) {
+                    localStorage.removeItem('idleSocialistV7');
+                    localStorage.removeItem('idleSocialistV6');
+                    localStorage.removeItem('idleSocialistV5');
+                    location.reload();
+                }
+            }
+        }
+
+        const game = new Game();
+        window.onload = () => game.init();
+
+    </script>
+</body>
+</html>

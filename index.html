@@ -332,42 +332,86 @@
         
         /* LEVEL LADDER */
         #level-ladder-overlay {
-            background: linear-gradient(180deg, #87CEEB 0%, #B0E0E6 100%);
+            /* Replaced gradient with Map + Overlay */
+            background-color: #2c3e50;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 959 593'%3E%3Cpath fill='%23374151' d='M959 336l-6-23-28-15-14 4-6-10-27 3-28-21-12 16-19-10-30 8-11-7-24 23-10 24-12 3-13-13-34 11-4-14-27 9-16-8-32 9-17-5-30 23-3-12-22-11-20 24-33-11-20 14-22-11-33 26-50 10-16 21-36 15-30-1-11 13-12-9-38 26-46-13-34 10-19 35-28-7-17 23-24-3-20 13-20-6-26 21-5 26-25 12-31-8-13 27-17-6-38-18-9 2-20-12-15 7-44-18-18-33-19-10-10 16-12-2-26-23-44-23-13 4-21-14-10 13-10 34 22 6 22-11 19 18 3-26 5-24-24-11 17 26 12 40-8 34-14 12 15 21-14 18 6 27-18 21 10 32-4 23 18 24-12 16 13 20-5 25 22 16-17 35 24 20-1 23-11 40 22 6 28-9 12 8 21 2 15-10 19-1 34 37-5 24 14 31 2 20 30 4 8 22-8 21 3 13 18 12 16 37 4 7 16 24 18 4 22-17 25-14 22 9 11-11 31 1 30-18 13-35-7-18-22-28-13-27 23-9 21-22 25 8 21 22-11 47-8 14-15 10-42 16-20 50-8 22-12 18 3 22-10 47 6 12-19 28-6 18 12 13-8 16 8 28-16 18-27 21-3 24-15 27-7 8-17-4-26 15-18-22-34 8-14-15z'/%3E%3C/svg%3E");
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
             z-index: 9999;
-            overflow-y: auto;
+            overflow: hidden; /* Prevent scrolling */
+            /* Add dark overlay effect */
+            box-shadow: inset 0 0 0 1000px rgba(0,0,0,0.5);
         }
         .ladder-container {
-            width: 120px;
-            background: rgba(255, 255, 255, 0.5);
-            border-left: 4px solid white;
-            border-right: 4px solid white;
+            width: 160px;
+            height: 75vh; /* Take up 75% of viewport height to spread boxes evenly */
+            background: transparent;
+            border: none;
             position: relative;
-            margin: 50px 0;
+            margin: 0;
+            display: flex;
+            /* Stack bottom to top */
+            flex-direction: column-reverse; 
+            justify-content: space-between; /* Evenly distribute the 5 boxes */
+            padding: 20px 0;
         }
+        
+        /* The Infinite Road Line */
+        .ladder-container::before {
+            content: '';
+            position: absolute;
+            top: -10vh; 
+            bottom: -10vh; 
+            left: 50%;
+            transform: translateX(-50%);
+            width: 16px;
+            background-color: rgba(255, 255, 255, 0.3);
+            border-left: 2px solid rgba(255,255,255,0.5);
+            border-right: 2px solid rgba(255,255,255,0.5);
+            border-radius: 8px;
+            z-index: 0;
+        }
+
         .ladder-step {
             height: 60px;
             display: flex;
             align-items: center;
             justify-content: center;
-            border-bottom: 2px solid white;
+            /* Updated Purple Styling */
+            background-color: #9333ea; /* Purple-600 */
+            border: 3px solid #d8b4fe; /* Light Purple Border */
+            border-radius: 30px; /* Pill shape */
+            box-shadow: 0 4px 0 #6b21a8; /* Dark Purple Shadow */
+            
             font-family: 'Titan One', cursive;
-            color: #004D40;
-            font-size: 1rem;
+            color: white; /* White Text */
+            font-size: 1.5rem;
             position: relative;
+            /* Default Z-index */
+            z-index: 1; 
+            flex-shrink: 0; /* Prevent squishing */
         }
+        
+        /* High Z-index for the active step so avatar climbs ON TOP of next box */
+        .ladder-step.active-step {
+            z-index: 10;
+        }
+
         .ladder-avatar {
             position: absolute;
             left: 50%;
             transform: translateX(-50%);
-            width: 50px;
-            height: 50px;
+            width: 80px; /* Increased from 50px */
+            height: 80px; /* Increased from 50px */
             border-radius: 50%;
-            border: 3px solid #FACC15;
+            border: 4px solid #FACC15; /* Slightly thicker border */
             background: white;
             overflow: hidden;
             transition: bottom 1s ease-in-out;
-            z-index: 10;
+            z-index: 20;
             bottom: 5px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
         }
         
         /* ACTIVE BOOST STYLE */
@@ -449,7 +493,8 @@
 
             <!-- Settings -->
             <div class="flex flex-col gap-1">
-                <button onclick="game.saveGame()" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded border-b-2 border-blue-800 active:translate-y-1">SAVE</button>
+                <!-- Changed Save Button to Advance Button -->
+                <button onclick="game.showPrestigeModal()" class="bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold px-2 py-1 rounded border-b-2 border-purple-800 active:translate-y-1">ADVANCE</button>
                 <button onclick="game.hardReset()" class="bg-red-600 hover:bg-red-500 text-white text-xs font-bold px-2 py-1 rounded border-b-2 border-red-800 active:translate-y-1">RESET</button>
             </div>
         </div>
@@ -526,9 +571,9 @@
 
     <!-- Level Ladder Overlay -->
     <div id="level-ladder-overlay" class="fixed inset-0 hidden flex flex-col items-center justify-center">
-        <div class="text-white font-game text-2xl mb-4 drop-shadow-md mt-10">ADVANCING...</div>
+        <div class="text-white font-game text-2xl mb-4 drop-shadow-md mt-10 relative z-10">ADVANCING...</div>
         <!-- Make container scrollable/fit -->
-        <div class="w-full flex-1 overflow-hidden flex justify-center">
+        <div class="w-full flex-1 overflow-hidden flex justify-center relative z-10">
              <div class="ladder-container flex flex-col-reverse" id="ladder-steps">
                 <!-- Steps injected via JS -->
             </div>
@@ -537,7 +582,10 @@
 
     <div id="prestige-modal" class="fixed inset-0 modal-backdrop z-50 hidden flex items-center justify-center px-4">
         <div class="bg-red-900 rounded-xl shadow-2xl w-full max-w-sm overflow-hidden border-4 border-yellow-500 animate-bounce-in text-center">
-            <div class="p-6 bg-red-800 text-white">
+            <div class="p-6 bg-red-800 text-white relative">
+                <!-- Added Close Button -->
+                <button onclick="game.closePrestigeModal()" class="absolute top-2 right-2 text-red-300 hover:text-white"><i class="fas fa-times text-xl"></i></button>
+                
                 <i class="fas fa-fist-raised text-6xl text-yellow-400 mb-4 animate-pulse"></i>
                 <h2 class="font-game text-xl mb-2 uppercase text-yellow-300 leading-tight">The People Are Too Unhappy. Time to move to another city?</h2>
                 <p class="text-sm mb-4 text-red-100">Reset your progress to gain prestige multipliers!</p>
@@ -697,6 +745,73 @@
                 this.levelStartTime = Date.now();
             }
 
+            // --- HELPER METHODS MOVED TO TOP TO ENSURE AVAILABILITY ---
+            getGenCost(id) { 
+                const g = GENERATORS_DATA.find(x => x.id === id);
+                if (id === 'taxes' && Number(this.state.generators[id]) === 0) return 0;
+                return Math.floor(g.baseCost * Math.pow(1.15, this.state.generators[id]));
+            }
+            
+            getGenMultiplier(id) {
+                const count = this.state.generators[id];
+                let multipliers = 0;
+                if (count >= 10) multipliers++;
+                if (count >= 25) multipliers++;
+                if (count >= 50) multipliers++;
+                if (count >= 100) multipliers++;
+                if (count > 100) multipliers += Math.floor((count - 100) / 50);
+                return Math.pow(2, multipliers);
+            }
+
+            getManagerMultiplier(industryId) {
+                const activeId = this.state.activeManagers[industryId];
+                if (!activeId) return 1;
+                const options = MANAGER_OPTIONS[industryId];
+                const mgr = options.find(m => m.id === activeId);
+                if (!mgr) return 1;
+                const lvl = this.state.managerLevels[activeId] || 1;
+                return mgr.mult * Math.pow(2, lvl - 1);
+            }
+
+            getGenRevenue(id) {
+                const g = GENERATORS_DATA.find(x => x.id === id);
+                let count = this.state.generators[id];
+                let rev = g.baseRevenue * count;
+                rev *= this.getManagerMultiplier(id);
+                rev *= this.getGenMultiplier(id);
+                rev *= this.state.prestigeMultiplier;
+                rev *= this.getAdBoostMultiplier(); 
+                return rev;
+            }
+
+            getGenUnhappiness(id) {
+                const g = GENERATORS_DATA.find(x => x.id === id);
+                return g.baseUnhappiness * this.state.generators[id];
+            }
+
+            getNextMilestone(id) {
+                const count = this.state.generators[id];
+                if (count < 10) return 10;
+                if (count < 25) return 25;
+                if (count < 50) return 50;
+                if (count < 100) return 100;
+                return Math.ceil((Math.max(count, 100) + 1) / 50) * 50;
+            }
+
+            getPrevMilestone(id) {
+                const count = this.state.generators[id];
+                if (count < 10) return 0;
+                if (count < 25) return 10;
+                if (count < 50) return 25;
+                if (count < 100) return 50;
+                return Math.floor((count - 1) / 50) * 50;
+            }
+
+            getUnhappinessThreshold() { return 25000 * Math.pow(10, this.state.level - 1); }
+            getNextLevelMultiplier() { return Math.pow(2, this.state.level); }
+            getAdBoostMultiplier() { return (Date.now() < this.state.adBoostExpiry) ? 2 : 1; }
+
+            // --- INITIALIZATION ---
             init() {
                 this.loadGame();
                 if (!this.state.activeMissions[0]) this.generateMission(0);
@@ -727,7 +842,6 @@
                 }, 3000);
             }
             
-            // Trigger global pulse for revenue texts
             animateGlobalPulse() {
                 const allRevenueTexts = document.querySelectorAll('.revenue');
                 allRevenueTexts.forEach(el => {
@@ -736,11 +850,9 @@
                 });
             }
 
-            getAdBoostMultiplier() { return (Date.now() < this.state.adBoostExpiry) ? 2 : 1; }
-
+            // --- MISSIONS ---
             generateMission(slot) {
                 let mission = {};
-                // Hardcoded tutorial missions for first slot
                 if (slot === 0) {
                     if (this.state.missionCount === 0) {
                          mission = { icon: "📣", type: 'click', count: 50, current: 0, reward: { type: 'money', val: 500 }, text: "Fundraise 50 times" };
@@ -757,41 +869,26 @@
                     }
                 }
 
-                // Robust duplicate check
                 const isDuplicate = (newM) => {
                     return Object.entries(this.state.activeMissions).some(([key, existing]) => {
-                        // Ignore the slot we are currently generating for
                         if (Number(key) === slot) return false;
                         if (!existing) return false;
-
-                        // Prevent identical Buy missions (same generator)
                         if (newM.type === 'buy' && existing.type === 'buy' && newM.target === existing.target) return true;
-                        
-                        // Prevent multiple Click/Fundraise missions at once
                         if (newM.type === 'click' && existing.type === 'click') return true;
-                        
-                        // Prevent multiple Cash target missions at once
                         if (newM.type === 'cash' && existing.type === 'cash') return true;
-                        
                         return false;
                     });
                 };
 
                 let attempts = 0;
-                // Try up to 20 times to generate a unique mission
                 do {
                     attempts++;
                     const type = Math.random();
-                    
-                    // Logic to pick a generator that the user actually has unlocked or is close to
-                    // Get unlocked generators to ensure variety (randomize choice)
                     const unlockedGens = GENERATORS_DATA.filter(g => this.state.generators[g.id] > 0);
-                    // Fallback to first generator if none unlocked (start of game)
                     let targetGen = unlockedGens.length > 0 
                         ? unlockedGens[Math.floor(Math.random() * unlockedGens.length)] 
                         : GENERATORS_DATA[0];
                     
-                    // Occasional chance to target the NEXT locked generator to encourage progress
                     if (Math.random() < 0.3 && unlockedGens.length < GENERATORS_DATA.length) {
                          const nextIdx = GENERATORS_DATA.findIndex(g => g.id === targetGen.id) + 1;
                          if (nextIdx < GENERATORS_DATA.length) targetGen = GENERATORS_DATA[nextIdx];
@@ -801,24 +898,19 @@
                     let targetCount = currentCount + 10;
 
                     if (type < 0.4) {
-                        // Buy Mission
                         let cost = this.getGenCost(targetGen.id);
                         let rewardVal = Math.max(100, cost * 5);
                         mission = { icon: targetGen.icon, type: 'buy', target: targetGen.id, count: targetCount, reward: { type: 'money', val: rewardVal }, text: `Own ${targetCount} ${targetGen.name}` };
                     } else if (type < 0.7) {
-                        // Cash Mission
                         let ips = 0;
                         GENERATORS_DATA.forEach(g => { 
                              if(this.state.generators[g.id] > 0) ips += this.getGenRevenue(g.id) / (g.cycleTime/1000); 
                         });
                         if (ips === 0) ips = 10;
-                        // Target is current money + 60 seconds of income
                         let targetCash = this.state.influence + (ips * 60);
-                        // Ensure target isn't trivially low
                         targetCash = Math.max(targetCash, 1000); 
                         mission = { icon: "💰", type: 'cash', amount: targetCash, reward: { type: 'theory', val: 1 }, text: `Reach ${formatNumber(targetCash)}` };
                     } else {
-                        // Click Mission
                         mission = { icon: "📣", type: 'click', count: 50, current: 0, reward: { type: 'money', val: 500 }, text: "Fundraise 50 times" };
                     }
                 } while (isDuplicate(mission) && attempts < 20);
@@ -826,7 +918,6 @@
                 this.state.activeMissions[slot] = mission;
                 if (slot === 1) this.state.missionTimers[1] = Date.now() + this.missionConfig.midSlotDuration;
                 
-                // It is safe to call renderMissions here because generateMission is not called every frame
                 this.renderMissions(); 
             }
 
@@ -883,7 +974,6 @@
                     this.createMissionCard(container, 2);
                 } else {
                     const adCard = document.createElement('div');
-                    // Adjusted styling to match your image (White bg, Brown border, rounded)
                     adCard.className = 'mission-card mission-card-locked-ad flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 transition shadow-sm';
                     adCard.onclick = () => this.watchAd('mission');
                     adCard.innerHTML = `
@@ -929,34 +1019,25 @@
                 container.appendChild(div);
             }
 
-            // Red Tip Logic
             checkRepNotification() {
                 const notification = document.getElementById('rep-notification');
                 if (!notification) return;
-
-                // Condition: Have >= 5 TP AND at least one manager is hired and upgradable
                 if (this.state.theoryPoints >= 5) {
                     const hasUpgradableManager = Object.entries(this.state.activeManagers).some(([genId, mgrId]) => {
-                         if (!mgrId) return false; // No manager hired
+                         if (!mgrId) return false; 
                          const lvl = this.state.managerLevels[mgrId] || 1;
-                         return lvl < 10; // Can still be upgraded
+                         return lvl < 10; 
                     });
-
-                    if (hasUpgradableManager) {
-                        notification.classList.remove('hidden');
-                    } else {
-                        notification.classList.add('hidden');
-                    }
+                    if (hasUpgradableManager) notification.classList.remove('hidden');
+                    else notification.classList.add('hidden');
                 } else {
                     notification.classList.add('hidden');
                 }
             }
 
             openAllRepsModal() {
-                // Clear notification on open
                 const notification = document.getElementById('rep-notification');
                 if (notification) notification.classList.add('hidden');
-
                 const modal = document.getElementById('all-reps-modal');
                 const list = document.getElementById('all-reps-list');
                 list.innerHTML = '';
@@ -1012,30 +1093,15 @@
                 modal.classList.remove('hidden');
             }
 
-            // ... [Rest of logic: Revenue, Costs, etc.] ...
-            
-            getGenRevenue(id) {
-                const g = GENERATORS_DATA.find(x => x.id === id);
-                let count = this.state.generators[id];
-                let rev = g.baseRevenue * count;
-                rev *= this.getManagerMultiplier(id);
-                rev *= this.getGenMultiplier(id);
-                rev *= this.state.prestigeMultiplier;
-                rev *= this.getAdBoostMultiplier(); 
-                return rev;
-            }
-            getGenUnhappiness(id) {
-                const g = GENERATORS_DATA.find(x => x.id === id);
-                return g.baseUnhappiness * this.state.generators[id];
-            }
             updateUI() {
                 this.updateHeader();
                 Object.keys(this.state.generators).forEach(id => {
                     this.updateCardUI(id);
                 });
-                this.renderMissions();
-                this.checkRepNotification(); // Update Red Tip
+                this.updateMissionVisuals();
+                this.checkRepNotification(); 
             }
+
             updateHeader() {
                 const el = document.getElementById('influence-display');
                 if(el) el.innerText = formatNumber(this.state.influence).replace("$", "");
@@ -1050,15 +1116,6 @@
                 if(unhLimit) unhLimit.innerText = formatUnhappiness(limit);
                 const unhBar = document.getElementById('unhappiness-bar');
                 if(unhBar) unhBar.style.width = `${pct}%`;
-                let totalIPS = 0;
-                GENERATORS_DATA.forEach(g => { 
-                    if(this.state.generators[g.id] > 0 && this.state.activeManagers[g.id]) 
-                        totalIPS += this.getGenRevenue(g.id) / (g.cycleTime/1000); 
-                });
-                const ips = document.getElementById('ips-display');
-                if(ips) ips.innerText = formatNumber(totalIPS);
-                const modalTheory = document.getElementById('modal-theory-display');
-                if(modalTheory) modalTheory.innerText = this.state.theoryPoints;
                 
                 const boostBadge = document.getElementById('boost-badge');
                 if (boostBadge) {
@@ -1078,61 +1135,27 @@
                     }
                 }
             }
-            
-            getUnhappinessThreshold() { return 25000 * Math.pow(10, this.state.level - 1); }
-            getNextLevelMultiplier() { return Math.pow(2, this.state.level); }
-            getGenCost(id) { 
-                const g = GENERATORS_DATA.find(x => x.id === id);
-                if (id === 'taxes' && Number(this.state.generators[id]) === 0) return 0;
-                return Math.floor(g.baseCost * Math.pow(1.15, this.state.generators[id]));
-            }
-            getGenMultiplier(id) {
-                const count = this.state.generators[id];
-                let multipliers = 0;
-                if (count >= 10) multipliers++;
-                if (count >= 25) multipliers++;
-                if (count >= 50) multipliers++;
-                if (count >= 100) multipliers++;
-                if (count > 100) multipliers += Math.floor((count - 100) / 50);
-                return Math.pow(2, multipliers);
-            }
-            getManagerMultiplier(industryId) {
-                const activeId = this.state.activeManagers[industryId];
-                if (!activeId) return 1;
-                const options = MANAGER_OPTIONS[industryId];
-                const mgr = options.find(m => m.id === activeId);
-                if (!mgr) return 1;
-                const lvl = this.state.managerLevels[activeId] || 1;
-                return mgr.mult * Math.pow(2, lvl - 1);
-            }
-            getNextMilestone(id) {
-                const count = this.state.generators[id];
-                if (count < 10) return 10;
-                if (count < 25) return 25;
-                if (count < 50) return 50;
-                if (count < 100) return 100;
-                return Math.ceil((Math.max(count, 100) + 1) / 50) * 50;
-            }
-            getPrevMilestone(id) {
-                const count = this.state.generators[id];
-                if (count < 10) return 0;
-                if (count < 25) return 10;
-                if (count < 50) return 25;
-                if (count < 100) return 50;
-                return Math.floor((count - 1) / 50) * 50;
-            }
+
             checkPrestigeCondition() {
                 if (this.prestigePending) return;
                 if (this.state.unhappiness >= this.getUnhappinessThreshold()) {
-                    this.prestigePending = true;
                     this.showPrestigeModal();
                 }
             }
             showPrestigeModal() {
+                this.prestigePending = true; 
                 const modal = document.getElementById('prestige-modal');
                 document.getElementById('prestige-bonus-display').innerText = `Production x${this.getNextLevelMultiplier()}`;
                 document.getElementById('next-level-display').innerText = this.state.level + 1;
                 modal.classList.remove('hidden');
+            }
+            closePrestigeModal() {
+                if (this.state.unhappiness >= this.getUnhappinessThreshold()) {
+                    this.showToast("Cannot ignore the people's anger!");
+                    return;
+                }
+                this.prestigePending = false;
+                document.getElementById('prestige-modal').classList.add('hidden');
             }
             startPrestigeSequence() {
                 document.getElementById('prestige-modal').classList.add('hidden');
@@ -1149,13 +1172,24 @@
                 const stepsContainer = document.getElementById('ladder-steps');
                 stepsContainer.innerHTML = '';
                 const currentLvl = this.state.level;
-                const nextLvl = currentLvl + 1;
-                // Show 10 steps ahead
-                for (let l = nextLvl + 9; l >= currentLvl; l--) {
+                
+                // Show exactly 5 levels: Current, +1, +2, +3, +4
+                const levelsToShow = 5; 
+                
+                // Store references to steps to measure distance later
+                const stepElements = [];
+
+                // Because of flex-direction: column-reverse, 
+                // the First element appended appears at the BOTTOM.
+                for (let i = 0; i < levelsToShow; i++) {
+                    const l = currentLvl + i;
                     const step = document.createElement('div');
                     step.className = 'ladder-step';
                     step.innerText = l;
-                    if (l === currentLvl) {
+                    
+                    if (i === 0) {
+                        // This is the current level (bottom-most)
+                        step.classList.add('active-step'); // Higher z-index
                         const avatar = document.createElement('div');
                         avatar.className = 'ladder-avatar';
                         avatar.innerHTML = `<img src="${document.getElementById('avatar-img').src}" class="w-full h-full object-cover">`;
@@ -1163,16 +1197,33 @@
                         step.appendChild(avatar);
                     }
                     stepsContainer.appendChild(step);
+                    stepElements.push(step);
                 }
                 overlay.classList.remove('hidden');
+                
                 setTimeout(() => {
                     const avatar = document.getElementById('climbing-avatar');
-                    avatar.style.bottom = '65px'; // Move up one step height (60px + margin)
+                    
+                    // Calculate dynamic jump distance based on actual screen rendering
+                    if (stepElements.length >= 2) {
+                        const currentBox = stepElements[0].getBoundingClientRect(); // Bottom box
+                        const nextBox = stepElements[1].getBoundingClientRect();    // One above
+                        // Calculate distance from bottom of current to bottom of next
+                        // Since coordinates start at top, nextBox.bottom will be smaller (higher up) than currentBox.bottom
+                        const distance = currentBox.bottom - nextBox.bottom;
+                        
+                        // Current bottom is 5px. We add the distance between boxes.
+                        avatar.style.bottom = (5 + distance) + 'px'; 
+                    } else {
+                        // Fallback if calculation fails
+                        avatar.style.bottom = '125px';
+                    }
                 }, 500);
+                
                 setTimeout(() => {
                     overlay.classList.add('hidden');
                     this.prestige();
-                }, 4500); // Wait 2s extra after climb
+                }, 4500); 
             }
             prestige() {
                 this.state.level++;
@@ -1366,7 +1417,7 @@
                         this.processProduction(dt);
                         this.updateProgressBars();
                         this.checkMissions(); 
-                        this.updateMissionVisuals(); // Changed from renderMissions
+                        this.updateMissionVisuals();
                         this.updateHeader(); 
                     }
                     requestAnimationFrame(loop);
@@ -1385,7 +1436,6 @@
                     if(!card) continue;
 
                     if(m) {
-                        // Update Progress
                         let progress = 0;
                         if (m.type === 'buy') progress = Math.min(100, (this.state.generators[m.target] / m.count) * 100);
                         else if (m.type === 'cash') progress = Math.min(100, (this.state.influence / m.amount) * 100);
@@ -1398,7 +1448,6 @@
                             if(!card.classList.contains('bg-green-100')) card.classList.add('bg-green-100', 'border-green-600');
                         }
 
-                        // Update Timer for Slot 1 if active
                         if(i === 1) {
                             const timerEl = card.querySelector('.mission-timer');
                             if(timerEl) {
@@ -1408,7 +1457,6 @@
                             }
                         }
                     } else if(i === 1) {
-                         // Update Cooldown Text for Slot 1
                          const cooldown = this.state.missionCooldowns[1];
                          if (cooldown) {
                              const wait = Math.max(0, Math.ceil((cooldown - Date.now()) / 1000));
@@ -1516,61 +1564,6 @@
                 });
                 modal.classList.remove('hidden');
             }
-            openAllRepsModal() {
-                const modal = document.getElementById('all-reps-modal');
-                const list = document.getElementById('all-reps-list');
-                list.innerHTML = '';
-                const mt = document.getElementById('modal-theory-display');
-                if(mt) mt.innerText = this.state.theoryPoints;
-                GENERATORS_DATA.forEach(gen => {
-                    const header = document.createElement('div');
-                    header.className = "flex items-center gap-2 mb-2 mt-4 pb-1 border-b border-teal-200 first:mt-0";
-                    header.innerHTML = `<span class="text-xl">${gen.icon}</span> <h3 class="font-bold text-teal-800">${gen.name}</h3>`;
-                    list.appendChild(header);
-                    const options = MANAGER_OPTIONS[gen.id];
-                    options.forEach(mgr => {
-                        const activeId = this.state.activeManagers[gen.id];
-                        const isHired = activeId === mgr.id;
-                        const lvl = this.state.managerLevels[mgr.id] || 1;
-                        const maxLvl = 10;
-                        const div = document.createElement('div');
-                        div.className = "bg-white p-3 rounded-lg shadow-sm mb-2 border border-gray-200 flex flex-col gap-2";
-                        let actionBtn = `<button class="btn-hire px-3 py-1.5 rounded text-xs font-bold uppercase shadow-sm transition ${isHired ? 'bg-green-100 text-green-700 cursor-default' : 'bg-teal-600 text-white hover:bg-teal-500 btn-3d'}" 
-                                    ${isHired ? 'disabled' : ''}
-                                    onclick="game.hireManager('${gen.id}', '${mgr.id}', ${mgr.cost}, event)">
-                                ${isHired ? 'Active' : `${formatNumber(mgr.cost)}`}
-                            </button>`;
-                        let upgradeRow = "";
-                        if (isHired) {
-                             upgradeRow = `
-                                <div class="flex items-center justify-between bg-blue-50 p-2 rounded border border-blue-100 mt-1">
-                                    <div class="text-xs text-blue-800 font-bold">Level ${lvl}/${maxLvl}</div>
-                                    <button class="bg-blue-500 hover:bg-blue-400 text-white text-[10px] font-bold px-2 py-1 rounded shadow disabled:opacity-50" 
-                                            ${(this.state.theoryPoints < 5 || lvl >= maxLvl) ? 'disabled' : ''}
-                                            onclick="game.upgradeManager('${mgr.id}', '${gen.id}')">
-                                        Upgrade (5 📘)
-                                    </button>
-                                </div>
-                             `;
-                        }
-                        div.innerHTML = `
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center gap-3">
-                                    <img src="${mgr.img}" class="w-10 h-10 rounded-full border-2 border-teal-500">
-                                    <div>
-                                        <div class="font-bold text-gray-800 text-sm">${mgr.name}</div>
-                                        <div class="text-xs font-bold text-orange-600">Current: x${mgr.mult * Math.pow(2, lvl-1)}</div>
-                                    </div>
-                                </div>
-                                ${actionBtn}
-                            </div>
-                            ${upgradeRow}
-                        `;
-                        list.appendChild(div);
-                    });
-                });
-                modal.classList.remove('hidden');
-            }
             upgradeManager(mgrId, genId) {
                 if(this.state.theoryPoints >= 5) { 
                     this.state.theoryPoints -= 5;
@@ -1593,7 +1586,6 @@
                     if(!document.getElementById('all-reps-modal').classList.contains('hidden')) this.openAllRepsModal();
                     if(e && e.target) this.showContextToast(e.target, "Manager Hired!", "success");
                     else this.showToast("Manager Hired!");
-                    // FIX: Force remove wiggle
                     const card = document.getElementById(`card-${industryId}`);
                     if(card) {
                         const icon = card.querySelector('.ring-container');
@@ -1736,7 +1728,7 @@
                     const triggerArea = card.querySelector('.manual-trigger-area');
                     triggerArea.classList.add('cursor-pointer-active');
                     triggerArea.onclick = () => this.activateGenerator(g.id);
-                    // Removed the touchend preventDefault listener that was blocking mobile clicks
+                    
                     card.querySelector('.emoji').innerText = g.icon;
                     card.querySelector('.name').innerText = g.name;
                     const buyBtn = card.querySelector('.buy-btn');

@@ -740,6 +740,7 @@
 
             generateMission(slot) {
                 let mission = {};
+                // Hardcoded tutorial missions for first slot
                 if (slot === 0) {
                     if (this.state.missionCount === 0) {
                          mission = { icon: "📣", type: 'click', count: 50, current: 0, reward: { type: 'money', val: 500 }, text: "Fundraise 50 times" };
@@ -756,42 +757,77 @@
                     }
                 }
 
+                // Robust duplicate check
                 const isDuplicate = (newM) => {
-                    return Object.values(this.state.activeMissions).some(existing => {
+                    return Object.entries(this.state.activeMissions).some(([key, existing]) => {
+                        // Ignore the slot we are currently generating for
+                        if (Number(key) === slot) return false;
                         if (!existing) return false;
+
+                        // Prevent identical Buy missions (same generator)
                         if (newM.type === 'buy' && existing.type === 'buy' && newM.target === existing.target) return true;
+                        
+                        // Prevent multiple Click/Fundraise missions at once
                         if (newM.type === 'click' && existing.type === 'click') return true;
+                        
+                        // Prevent multiple Cash target missions at once
                         if (newM.type === 'cash' && existing.type === 'cash') return true;
+                        
                         return false;
                     });
                 };
 
-                for (let i = 0; i < 5; i++) {
+                let attempts = 0;
+                // Try up to 20 times to generate a unique mission
+                do {
+                    attempts++;
                     const type = Math.random();
-                    let targetGen = GENERATORS_DATA.find(g => this.state.generators[g.id] > 0) || GENERATORS_DATA[0];
+                    
+                    // Logic to pick a generator that the user actually has unlocked or is close to
+                    // Get unlocked generators to ensure variety (randomize choice)
+                    const unlockedGens = GENERATORS_DATA.filter(g => this.state.generators[g.id] > 0);
+                    // Fallback to first generator if none unlocked (start of game)
+                    let targetGen = unlockedGens.length > 0 
+                        ? unlockedGens[Math.floor(Math.random() * unlockedGens.length)] 
+                        : GENERATORS_DATA[0];
+                    
+                    // Occasional chance to target the NEXT locked generator to encourage progress
+                    if (Math.random() < 0.3 && unlockedGens.length < GENERATORS_DATA.length) {
+                         const nextIdx = GENERATORS_DATA.findIndex(g => g.id === targetGen.id) + 1;
+                         if (nextIdx < GENERATORS_DATA.length) targetGen = GENERATORS_DATA[nextIdx];
+                    }
+
                     let currentCount = this.state.generators[targetGen.id] || 0;
                     let targetCount = currentCount + 10;
 
                     if (type < 0.4) {
+                        // Buy Mission
                         let cost = this.getGenCost(targetGen.id);
                         let rewardVal = Math.max(100, cost * 5);
                         mission = { icon: targetGen.icon, type: 'buy', target: targetGen.id, count: targetCount, reward: { type: 'money', val: rewardVal }, text: `Own ${targetCount} ${targetGen.name}` };
                     } else if (type < 0.7) {
+                        // Cash Mission
                         let ips = 0;
                         GENERATORS_DATA.forEach(g => { 
                              if(this.state.generators[g.id] > 0) ips += this.getGenRevenue(g.id) / (g.cycleTime/1000); 
                         });
                         if (ips === 0) ips = 10;
+                        // Target is current money + 60 seconds of income
                         let targetCash = this.state.influence + (ips * 60);
+                        // Ensure target isn't trivially low
+                        targetCash = Math.max(targetCash, 1000); 
                         mission = { icon: "💰", type: 'cash', amount: targetCash, reward: { type: 'theory', val: 1 }, text: `Reach ${formatNumber(targetCash)}` };
                     } else {
+                        // Click Mission
                         mission = { icon: "📣", type: 'click', count: 50, current: 0, reward: { type: 'money', val: 500 }, text: "Fundraise 50 times" };
                     }
-                    if (!isDuplicate(mission)) break; 
-                }
+                } while (isDuplicate(mission) && attempts < 20);
+
                 this.state.activeMissions[slot] = mission;
                 if (slot === 1) this.state.missionTimers[1] = Date.now() + this.missionConfig.midSlotDuration;
-                this.renderMissions();
+                
+                // It is safe to call renderMissions here because generateMission is not called every frame
+                this.renderMissions(); 
             }
 
             checkMissions() {
@@ -1700,7 +1736,7 @@
                     const triggerArea = card.querySelector('.manual-trigger-area');
                     triggerArea.classList.add('cursor-pointer-active');
                     triggerArea.onclick = () => this.activateGenerator(g.id);
-                    triggerArea.addEventListener('touchend', (e) => e.preventDefault());
+                    // Removed the touchend preventDefault listener that was blocking mobile clicks
                     card.querySelector('.emoji').innerText = g.icon;
                     card.querySelector('.name').innerText = g.name;
                     const buyBtn = card.querySelector('.buy-btn');

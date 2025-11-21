@@ -304,6 +304,14 @@
             transition: transform 0.1s;
         }
         .mission-card:active { transform: scale(0.95); }
+        
+        /* New Style for the Locked Ad Slot to match image */
+        .mission-card-locked-ad {
+            background: #F8FAFC; /* Slate-50 (White-ish) */
+            border: 3px solid #9A3412; /* Orange-900/Brownish */
+            border-radius: 12px;
+        }
+
         .mission-locked { filter: grayscale(1); opacity: 0.7; pointer-events: none; }
         .mission-timer { 
             position: absolute; 
@@ -839,9 +847,16 @@
                     this.createMissionCard(container, 2);
                 } else {
                     const adCard = document.createElement('div');
-                    adCard.className = 'mission-card bg-gray-100 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-200 transition';
+                    // Adjusted styling to match your image (White bg, Brown border, rounded)
+                    adCard.className = 'mission-card mission-card-locked-ad flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 transition shadow-sm';
                     adCard.onclick = () => this.watchAd('mission');
-                    adCard.innerHTML = `<i class="fas fa-play-circle text-green-600 text-2xl mb-1"></i><div class="text-[9px] font-bold text-gray-700">Unlock Slot</div><div class="text-[8px] text-teal-700 font-bold">For this Level</div>`;
+                    adCard.innerHTML = `
+                        <div class="w-8 h-8 rounded-full bg-green-600 flex items-center justify-center mb-1 shadow-sm">
+                            <i class="fas fa-play text-white text-xs ml-0.5"></i>
+                        </div>
+                        <div class="text-[10px] font-black text-gray-800 leading-tight">Unlock Slot</div>
+                        <div class="text-[9px] text-teal-700 font-bold">For this Level</div>
+                    `;
                     container.appendChild(adCard);
                 }
             }
@@ -1315,7 +1330,7 @@
                         this.processProduction(dt);
                         this.updateProgressBars();
                         this.checkMissions(); 
-                        this.renderMissions(); 
+                        this.updateMissionVisuals(); // Changed from renderMissions
                         this.updateHeader(); 
                     }
                     requestAnimationFrame(loop);
@@ -1324,6 +1339,52 @@
                 setInterval(() => this.checkAffordability(), 200);
                 setInterval(() => this.saveGame(), 30000);
             }
+
+            updateMissionVisuals() {
+                const container = document.getElementById('mission-container');
+                if (!container) return;
+                for(let i=0; i<3; i++) {
+                    const m = this.state.activeMissions[i];
+                    const card = container.children[i];
+                    if(!card) continue;
+
+                    if(m) {
+                        // Update Progress
+                        let progress = 0;
+                        if (m.type === 'buy') progress = Math.min(100, (this.state.generators[m.target] / m.count) * 100);
+                        else if (m.type === 'cash') progress = Math.min(100, (this.state.influence / m.amount) * 100);
+                        else if (m.type === 'click') progress = Math.min(100, (m.current / m.count) * 100);
+                        
+                        const bar = card.querySelector('.bg-green-500');
+                        if(bar) bar.style.width = `${progress}%`;
+                        
+                        if(progress >= 100) {
+                            if(!card.classList.contains('bg-green-100')) card.classList.add('bg-green-100', 'border-green-600');
+                        }
+
+                        // Update Timer for Slot 1 if active
+                        if(i === 1) {
+                            const timerEl = card.querySelector('.mission-timer');
+                            if(timerEl) {
+                                const timeLeft = Math.max(0, (this.state.missionTimers[1] - Date.now()));
+                                timerEl.innerText = formatTime(timeLeft);
+                                if(timeLeft < 10000) timerEl.classList.add('bg-red-600', 'animate-pulse');
+                            }
+                        }
+                    } else if(i === 1) {
+                         // Update Cooldown Text for Slot 1
+                         const cooldown = this.state.missionCooldowns[1];
+                         if (cooldown) {
+                             const wait = Math.max(0, Math.ceil((cooldown - Date.now()) / 1000));
+                             const txt = card.querySelector('div.text-center'); 
+                             if(txt && txt.innerHTML.includes('New Orders')) {
+                                 txt.innerHTML = `New Orders<br>in ${wait}s`;
+                             }
+                         }
+                    }
+                }
+            }
+
             processProduction(dt) {
                 GENERATORS_DATA.forEach(g => {
                     const count = this.state.generators[g.id];

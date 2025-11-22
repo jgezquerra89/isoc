@@ -206,10 +206,17 @@
             white-space: nowrap;
         }
         .context-toast.success { background-color: rgba(34, 197, 94, 0.95); }
+        .context-toast.info { background-color: rgba(59, 130, 246, 0.95); }
         
         @keyframes fadeUp {
             0% { opacity: 0; transform: translateY(0); }
             10% { opacity: 1; transform: translateY(-5px); }
+            100% { opacity: 0; transform: translateY(-20px); }
+        }
+        @keyframes fadeUpLong {
+            0% { opacity: 0; transform: translateY(0); }
+            5% { opacity: 1; transform: translateY(-5px); }
+            90% { opacity: 1; transform: translateY(-5px); }
             100% { opacity: 0; transform: translateY(-20px); }
         }
         
@@ -476,7 +483,8 @@
                             <span id="boost-badge" class="hidden text-[9px] bg-yellow-400 text-black px-1 rounded ml-1 animate-pulse">x2</span>
                         </div>
                     </div>
-                    <div id="theory-counter-target" class="bg-blue-900 rounded-full p-1 border-2 border-blue-600 w-16 h-8 flex items-center justify-center" title="Theory Points">
+                    <!-- UPDATED TOOLTIP TRIGGER -->
+                    <div id="theory-counter-target" class="bg-blue-900 rounded-full p-1 border-2 border-blue-600 w-16 h-8 flex items-center justify-center cursor-pointer active:scale-95 transition" title="Theory Points">
                         <div class="text-center text-white font-game text-sm tracking-wide leading-none">
                             <span class="text-blue-300 mr-1">📘</span><span id="theory-display">0</span>
                         </div>
@@ -519,6 +527,11 @@
                 <span class="text-[10px] font-bold uppercase">Reps</span>
                 <!-- Red Tip -->
                 <div id="rep-notification" class="notification-dot hidden"></div>
+            </button>
+            <!-- NEW PROPERTIES BUTTON -->
+            <button class="flex flex-col items-center text-teal-300 hover:text-white transition" onclick="game.openPropertiesModal()">
+                <i class="fas fa-home text-2xl mb-1 drop-shadow-md"></i>
+                <span class="text-[10px] font-bold uppercase">Properties</span>
             </button>
             <button class="flex flex-col items-center text-teal-300 hover:text-white transition" onclick="game.manualClick({clientX: window.innerWidth/2, clientY: window.innerHeight/2})">
                 <i class="fas fa-bullhorn text-2xl mb-1 drop-shadow-md"></i>
@@ -579,6 +592,22 @@
                         <div class="flex justify-between items-center pt-1"><span class="text-gray-500 font-bold">Max Cash Held</span> <span class="font-black text-green-600 text-sm" id="stat-max-cash">$0</span></div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PROPERTIES MODAL -->
+    <div id="properties-modal" class="fixed inset-0 modal-backdrop z-50 hidden flex items-center justify-center px-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm overflow-hidden animate-bounce-in flex flex-col max-h-[80vh]">
+            <div class="bg-teal-800 p-4 flex justify-between items-center border-b-4 border-teal-900 shrink-0">
+                <h2 class="text-white font-game text-lg">Real Estate</h2>
+                <button onclick="game.closeModal('properties-modal')" class="text-teal-200 hover:text-white"><i class="fas fa-times text-xl"></i></button>
+            </div>
+            <div class="bg-teal-100 p-3 text-xs text-teal-900 text-center border-b border-teal-200 font-bold">
+                <i class="fas fa-info-circle mr-1"></i> Buy Properties to show your influence!
+            </div>
+            <div class="p-4 bg-teal-50 overflow-y-auto flex-1" id="properties-list">
+                <!-- List Injected via JS -->
             </div>
         </div>
     </div>
@@ -708,15 +737,57 @@
             { id: "rent_control", name: "Rent Control", icon: "🏠", baseCost: 20000000, baseRevenue: 100000, baseUnhappiness: 1000000, cycleTime: 384000 }
         ];
 
+        // UPDATED MANAGER OPTIONS WITH RARITY
+        // Green = common, Blue = rare, Orange = legendary
         const MANAGER_OPTIONS = {
-            "taxes": [{ id: "taxes_1", name: "Auditor Andy", cost: 500, mult: 2, img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Andy" }, { id: "taxes_2", name: "Taxman Ted", cost: 5000, mult: 10, img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Ted" }, { id: "taxes_3", name: "Comptroller Cat", cost: 50000, mult: 50, img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Cat" }],
-            "social_union": [{ id: "union_1", name: "Tutor Tim", cost: 10000, mult: 2, img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Tim" }, { id: "union_2", name: "Prof. Pat", cost: 100000, mult: 10, img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Pat" }, { id: "union_3", name: "Dean Dan", cost: 1000000, mult: 50, img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Dan" }],
-            "zamdani_care": [{ id: "care_1", name: "Nurse Nancy", cost: 50000, mult: 2, img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Nancy" }, { id: "care_2", name: "Dr. Dave", cost: 500000, mult: 10, img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Dave" }, { id: "care_3", name: "Surgeon Sarah", cost: 5000000, mult: 50, img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah" }],
-            "foodstores": [{ id: "food_1", name: "Stocker Sam", cost: 200000, mult: 2, img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sam" }, { id: "food_2", name: "Manager Mike", cost: 2000000, mult: 10, img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Mike" }, { id: "food_3", name: "Director Deb", cost: 20000000, mult: 50, img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Deb" }],
-            "homeless_transit": [{ id: "transit_1", name: "Trainee Tom", cost: 1000000, mult: 2, img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Tom" }, { id: "transit_2", name: "Driver Dan", cost: 10000000, mult: 10, img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Dan" }, { id: "transit_3", name: "Pilot Pete", cost: 100000000, mult: 50, img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Pete" }],
-            "friendship_grid": [{ id: "energy_1", name: "Sparky Sam", cost: 5000000, mult: 2, img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sam" }, { id: "energy_2", name: "Tech Tina", cost: 50000000, mult: 10, img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Tina" }, { id: "energy_3", name: "Eng. Earl", cost: 500000000, mult: 50, img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Earl" }],
-            "rent_control": [{ id: "housing_1", name: "Inspector Ivy", cost: 20000000, mult: 2, img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Ivy" }, { id: "housing_2", name: "Planner Paul", cost: 200000000, mult: 10, img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Paul" }, { id: "housing_3", name: "Director Don", cost: 2000000000, mult: 50, img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Don" }]
+            "taxes": [
+                { id: "taxes_1", name: "Auditor Andy", rarity: "common", cost: 500, mult: 2, img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Andy" }, 
+                { id: "taxes_2", name: "Taxman Ted", rarity: "rare", cost: 5000, mult: 10, img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Ted" }, 
+                { id: "taxes_3", name: "Comptroller Cat", rarity: "legendary", cost: 50000, mult: 50, img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Cat" }
+            ],
+            "social_union": [
+                { id: "union_1", name: "Tutor Tim", rarity: "common", cost: 10000, mult: 2, img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Tim" }, 
+                { id: "union_2", name: "Prof. Pat", rarity: "rare", cost: 100000, mult: 10, img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Pat" }, 
+                { id: "union_3", name: "Dean Dan", rarity: "legendary", cost: 1000000, mult: 50, img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Dan" }
+            ],
+            "zamdani_care": [
+                { id: "care_1", name: "Nurse Nancy", rarity: "common", cost: 50000, mult: 2, img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Nancy" }, 
+                { id: "care_2", name: "Dr. Dave", rarity: "rare", cost: 500000, mult: 10, img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Dave" }, 
+                { id: "care_3", name: "Surgeon Sarah", rarity: "legendary", cost: 5000000, mult: 50, img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah" }
+            ],
+            "foodstores": [
+                { id: "food_1", name: "Stocker Sam", rarity: "common", cost: 200000, mult: 2, img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sam" }, 
+                { id: "food_2", name: "Manager Mike", rarity: "rare", cost: 2000000, mult: 10, img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Mike" }, 
+                { id: "food_3", name: "Director Deb", rarity: "legendary", cost: 20000000, mult: 50, img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Deb" }
+            ],
+            "homeless_transit": [
+                { id: "transit_1", name: "Trainee Tom", rarity: "common", cost: 1000000, mult: 2, img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Tom" }, 
+                { id: "transit_2", name: "Driver Dan", rarity: "rare", cost: 10000000, mult: 10, img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Dan" }, 
+                { id: "transit_3", name: "Pilot Pete", rarity: "legendary", cost: 100000000, mult: 50, img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Pete" }
+            ],
+            "friendship_grid": [
+                { id: "energy_1", name: "Sparky Sam", rarity: "common", cost: 5000000, mult: 2, img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sam" }, 
+                { id: "energy_2", name: "Tech Tina", rarity: "rare", cost: 50000000, mult: 10, img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Tina" }, 
+                { id: "energy_3", name: "Eng. Earl", rarity: "legendary", cost: 500000000, mult: 50, img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Earl" }
+            ],
+            "rent_control": [
+                { id: "housing_1", name: "Inspector Ivy", rarity: "common", cost: 20000000, mult: 2, img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Ivy" }, 
+                { id: "housing_2", name: "Planner Paul", rarity: "rare", cost: 200000000, mult: 10, img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Paul" }, 
+                { id: "housing_3", name: "Director Don", rarity: "legendary", cost: 2000000000, mult: 50, img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Don" }
+            ]
         };
+
+        const PROPERTIES_DATA = [
+            { id: "studio", name: "Studio Apartment", icon: "🛋️", cost: 50000, desc: "A humble beginning for a leader." },
+            { id: "apt1", name: "1 Bedroom Apt", icon: "🏢", cost: 10000000, desc: "A respectable base of operations." },
+            { id: "apt2", name: "2 Bedroom Apt", icon: "🌇", cost: 5000000000, desc: "Room for committees." }, // 5B
+            { id: "townhouse", name: "Townhouse", icon: "🏘️", cost: 2000000000000, desc: "Three floors of power." }, // 2T
+            { id: "house", name: "Detached House", icon: "🏡", cost: 1000000000000000, desc: "A suburban fortress." }, // 1 Quadrillion
+            { id: "vacation", name: "Vacation Home", icon: "🏖️", cost: 500000000000000000000, desc: "Rest is revolutionary." }, // 500 Qi
+            { id: "villa", name: "Luxury Villa", icon: "🏰", cost: 250000000000000000000000, desc: "For diplomatic summits." }, // 250 Sx
+            { id: "mansion", name: "Mega Mansion", icon: "🏟️", cost: 100000000000000000000000000, desc: "The people's palace." }, // 100 Sp
+            { id: "island", name: "Tropical Island", icon: "🏝️", cost: 50000000000000000000000000000, desc: "A nation unto itself." } // 50 Oc
+        ];
 
         const AVATAR_PRESETS = [
             "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix",
@@ -731,6 +802,11 @@
         ];
 
         function formatNumber(num) {
+            if (num >= 1e27) return "$" + (num / 1e27).toFixed(2) + "Oc";
+            if (num >= 1e24) return "$" + (num / 1e24).toFixed(2) + "Sp";
+            if (num >= 1e21) return "$" + (num / 1e21).toFixed(2) + "Sx";
+            if (num >= 1e18) return "$" + (num / 1e18).toFixed(2) + "Qi";
+            if (num >= 1e15) return "$" + (num / 1e15).toFixed(2) + "Q";
             if (num >= 1e12) return "$" + (num / 1e12).toFixed(2) + "T";
             if (num >= 1e9) return "$" + (num / 1e9).toFixed(2) + "B";
             if (num >= 1e6) return "$" + (num / 1e6).toFixed(2) + "M";
@@ -774,6 +850,7 @@
                     adSlotUnlocked: false,
                     // New Profile Tracking
                     playerName: "",
+                    ownedProperties: [], // Track property IDs
                     stats: {
                         taps: 0,
                         upgrades: 0,
@@ -835,6 +912,18 @@
                 const lvl = this.state.managerLevels[activeId] || 1;
                 return mgr.mult * Math.pow(2, lvl - 1);
             }
+            
+            getManagerUpgradeCost(mgr, currentLvl) {
+                // Base costs per rarity
+                const baseCosts = {
+                    'common': 5,    // Green
+                    'rare': 10,     // Blue
+                    'legendary': 20 // Orange
+                };
+                const base = baseCosts[mgr.rarity] || 5;
+                // Cost = Base * Current Level
+                return base * currentLvl;
+            }
 
             getGenRevenue(id) {
                 const g = GENERATORS_DATA.find(x => x.id === id);
@@ -890,6 +979,16 @@
                     // Default avatar
                     document.getElementById('avatar-img').src = AVATAR_PRESETS[0];
                 }
+                
+                // Setup Theory Point Tooltip
+                const theoryTarget = document.getElementById('theory-counter-target');
+                if(theoryTarget) {
+                    theoryTarget.onclick = (e) => {
+                        e.stopPropagation();
+                        // Show longer lasting context toast
+                        this.showContextToast(theoryTarget, "Use Theory Points to Upgrade Reps!", "info", 2500);
+                    };
+                }
             }
             
             watchAd(type) {
@@ -916,6 +1015,68 @@
                     el.classList.add('animate-pulse-big');
                     setTimeout(() => el.classList.remove('animate-pulse-big'), 500);
                 });
+            }
+
+            // --- PROPERTIES LOGIC ---
+            openPropertiesModal() {
+                const modal = document.getElementById('properties-modal');
+                const list = document.getElementById('properties-list');
+                list.innerHTML = '';
+
+                PROPERTIES_DATA.forEach(prop => {
+                    const isOwned = this.state.ownedProperties.includes(prop.id);
+                    const canAfford = this.state.influence >= prop.cost;
+                    
+                    const div = document.createElement('div');
+                    div.className = `bg-white rounded-lg shadow-sm mb-3 border-2 relative overflow-hidden ${isOwned ? 'border-green-500 bg-green-50' : 'border-gray-200'}`;
+                    
+                    let actionBtn = '';
+                    if (isOwned) {
+                        actionBtn = `<button class="bg-green-600 text-white font-bold text-xs px-3 py-1.5 rounded cursor-default shadow-inner">OWNED</button>`;
+                    } else {
+                        actionBtn = `<button class="px-3 py-1.5 rounded text-xs font-bold shadow-sm transition ${canAfford ? 'bg-teal-600 text-white hover:bg-teal-500 btn-3d' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}" 
+                                    ${!canAfford ? 'disabled' : ''}
+                                    onclick="game.buyProperty('${prop.id}')">
+                                Buy ${formatNumber(prop.cost)}
+                            </button>`;
+                    }
+
+                    div.innerHTML = `
+                        <div class="p-3 flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="text-3xl">${prop.icon}</div>
+                                <div>
+                                    <div class="font-bold text-gray-800 text-sm">${prop.name}</div>
+                                    <div class="text-[10px] font-medium text-gray-500">${prop.desc}</div>
+                                </div>
+                            </div>
+                            ${actionBtn}
+                        </div>
+                        ${isOwned ? '<div class="absolute top-0 right-0 bg-green-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-bl">ACQUIRED</div>' : ''}
+                    `;
+                    list.appendChild(div);
+                });
+
+                modal.classList.remove('hidden');
+            }
+
+            buyProperty(id) {
+                const prop = PROPERTIES_DATA.find(p => p.id === id);
+                if(!prop) return;
+                
+                if(this.state.ownedProperties.includes(id)) return;
+
+                if(this.state.influence >= prop.cost) {
+                    this.state.influence -= prop.cost;
+                    this.state.ownedProperties.push(id);
+                    this.updateHeader();
+                    this.openPropertiesModal(); // Refresh UI
+                    this.showToast(`Purchased ${prop.name}!`);
+                    
+                    // Confetti effect or visual feedback could go here
+                } else {
+                    this.showToast("Not enough funds!");
+                }
             }
 
             // --- PROFILE & STATS ---
@@ -1169,14 +1330,11 @@
             checkRepNotification() {
                 const notification = document.getElementById('rep-notification');
                 if (!notification) return;
+                // With dynamic costs, we can just check if theory points > 0 for now, 
+                // or we could get fancy and find the cheapest upgrade.
+                // Keeping it simple: if you have > 5, show it.
                 if (this.state.theoryPoints >= 5) {
-                    const hasUpgradableManager = Object.entries(this.state.activeManagers).some(([genId, mgrId]) => {
-                         if (!mgrId) return false; 
-                         const lvl = this.state.managerLevels[mgrId] || 1;
-                         return lvl < 10; 
-                    });
-                    if (hasUpgradableManager) notification.classList.remove('hidden');
-                    else notification.classList.add('hidden');
+                    notification.classList.remove('hidden');
                 } else {
                     notification.classList.add('hidden');
                 }
@@ -1201,22 +1359,42 @@
                         const isHired = activeId === mgr.id;
                         const lvl = this.state.managerLevels[mgr.id] || 1;
                         const maxLvl = 10;
+                        
+                        // RARITY COLORS
+                        let rarityClass = "border-gray-200 bg-white";
+                        let rarityBadge = "";
+                        if (mgr.rarity === 'common') {
+                            rarityClass = "border-green-400 bg-green-50";
+                            rarityBadge = `<span class="text-[8px] uppercase bg-green-200 text-green-800 px-1 rounded border border-green-300 ml-2">Common</span>`;
+                        } else if (mgr.rarity === 'rare') {
+                            rarityClass = "border-blue-400 bg-blue-50";
+                            rarityBadge = `<span class="text-[8px] uppercase bg-blue-200 text-blue-800 px-1 rounded border border-blue-300 ml-2">Rare</span>`;
+                        } else if (mgr.rarity === 'legendary') {
+                            rarityClass = "border-orange-400 bg-orange-50";
+                            rarityBadge = `<span class="text-[8px] uppercase bg-orange-200 text-orange-800 px-1 rounded border border-orange-300 ml-2">Legendary</span>`;
+                        }
+
                         const div = document.createElement('div');
-                        div.className = "bg-white p-3 rounded-lg shadow-sm mb-2 border border-gray-200 flex flex-col gap-2";
+                        div.className = `${rarityClass} p-3 rounded-lg shadow-sm mb-2 border flex flex-col gap-2`;
                         let actionBtn = `<button class="btn-hire px-3 py-1.5 rounded text-xs font-bold uppercase shadow-sm transition ${isHired ? 'bg-green-100 text-green-700 cursor-default' : 'bg-teal-600 text-white hover:bg-teal-500 btn-3d'}" 
                                     ${isHired ? 'disabled' : ''}
                                     onclick="game.hireManager('${gen.id}', '${mgr.id}', ${mgr.cost}, event)">
                                 ${isHired ? 'Active' : `${formatNumber(mgr.cost)}`}
                             </button>`;
+                        
                         let upgradeRow = "";
                         if (isHired) {
+                             // CALCULATE DYNAMIC COST
+                             const upgCost = this.getManagerUpgradeCost(mgr, lvl);
+                             const canAfford = this.state.theoryPoints >= upgCost;
+                             
                              upgradeRow = `
-                                <div class="flex items-center justify-between bg-blue-50 p-2 rounded border border-blue-100 mt-1">
-                                    <div class="text-xs text-blue-800 font-bold">Level ${lvl}/${maxLvl}</div>
-                                    <button class="bg-blue-500 hover:bg-blue-400 text-white text-[10px] font-bold px-2 py-1 rounded shadow disabled:opacity-50" 
-                                            ${(this.state.theoryPoints < 5 || lvl >= maxLvl) ? 'disabled' : ''}
+                                <div class="flex items-center justify-between bg-white bg-opacity-50 p-2 rounded border border-black border-opacity-5 mt-1">
+                                    <div class="text-xs text-gray-800 font-bold">Level ${lvl}/${maxLvl}</div>
+                                    <button class="text-[10px] font-bold px-2 py-1 rounded shadow disabled:opacity-50 transition ${canAfford ? 'bg-blue-500 hover:bg-blue-400 text-white' : 'bg-gray-400 text-gray-200'}" 
+                                            ${(!canAfford || lvl >= maxLvl) ? 'disabled' : ''}
                                             onclick="game.upgradeManager('${mgr.id}', '${gen.id}')">
-                                        Upgrade (5 📘)
+                                        ${lvl >= maxLvl ? 'MAX' : `Upgrade (${upgCost} 📘)`}
                                     </button>
                                 </div>
                              `;
@@ -1224,9 +1402,9 @@
                         div.innerHTML = `
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center gap-3">
-                                    <img src="${mgr.img}" class="w-10 h-10 rounded-full border-2 border-teal-500">
+                                    <img src="${mgr.img}" class="w-10 h-10 rounded-full border-2 border-teal-500 bg-white">
                                     <div>
-                                        <div class="font-bold text-gray-800 text-sm">${mgr.name}</div>
+                                        <div class="font-bold text-gray-800 text-sm flex items-center">${mgr.name} ${rarityBadge}</div>
                                         <div class="text-xs font-bold text-orange-600">Current: x${mgr.mult * Math.pow(2, lvl-1)}</div>
                                     </div>
                                 </div>
@@ -1733,8 +1911,14 @@
                 modal.classList.remove('hidden');
             }
             upgradeManager(mgrId, genId) {
-                if(this.state.theoryPoints >= 5) { 
-                    this.state.theoryPoints -= 5;
+                // Find Manager details to get cost
+                const industry = MANAGER_OPTIONS[genId];
+                const mgr = industry.find(m => m.id === mgrId);
+                const currentLvl = this.state.managerLevels[mgrId] || 1;
+                const cost = this.getManagerUpgradeCost(mgr, currentLvl);
+
+                if(this.state.theoryPoints >= cost) { 
+                    this.state.theoryPoints -= cost;
                     if(!this.state.managerLevels[mgrId]) this.state.managerLevels[mgrId] = 1;
                     this.state.managerLevels[mgrId]++;
                     
@@ -1772,16 +1956,27 @@
                     else { this.showToast("Not enough funds!"); }
                 }
             }
-            showContextToast(targetEl, text, type) {
+            // Modified to accept duration
+            showContextToast(targetEl, text, type, duration = 1000) {
                 const rect = targetEl.getBoundingClientRect();
                 const toast = document.createElement('div');
                 toast.className = 'context-toast';
                 if(type === 'success') toast.classList.add('success');
+                if(type === 'info') toast.classList.add('info');
+                
                 toast.innerText = text;
                 toast.style.left = `${rect.left}px`;
-                toast.style.top = `${rect.top - 30}px`; 
+                toast.style.top = `${rect.top - 30}px`;
+                
+                // Adjust animation duration based on timeout
+                if(duration > 1500) {
+                    toast.style.animation = `fadeUpLong ${duration/1000}s forwards`;
+                } else {
+                    toast.style.animation = `fadeUp ${duration/1000}s forwards`;
+                }
+
                 document.body.appendChild(toast);
-                setTimeout(() => toast.remove(), 1000);
+                setTimeout(() => toast.remove(), duration);
             }
             animateTheoryPointBurst(startEl, count) {
                 if(!startEl) return;
@@ -2042,6 +2237,9 @@
                                 maxCash: 0
                             };
                         }
+                        // Ensure properties exist
+                        if(!this.state.ownedProperties) this.state.ownedProperties = [];
+
                     } catch(e) { console.log('Save corrupted'); }
                 } else {
                     this.state.levelStartTime = Date.now();

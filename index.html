@@ -456,14 +456,13 @@
         <div class="max-w-md mx-auto flex justify-between items-center relative">
             
             <!-- Avatar -->
-            <div class="relative group cursor-pointer" onclick="game.manualClick(event)">
+            <div class="relative group cursor-pointer" onclick="game.openProfileModal()">
                 <div class="w-16 h-16 rounded-full border-4 border-white shadow-lg overflow-hidden bg-yellow-300 relative z-10 avatar-container hover:scale-105 transition-transform">
                     <img id="avatar-img" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' fill='%23FDD835'/%3E%3Ccircle cx='100' cy='100' r='80' fill='%238D5524'/%3E%3Cpath d='M50,80 Q100,20 150,80 L150,120 Q100,180 50,120 Z' fill='%238D5524'/%3E%3Cpath d='M40,80 Q100,-20 160,80 L160,100 L40,100 Z' fill='%231a1a1a'/%3E%3Crect x='50' y='140' width='100' height='60' fill='%23333' rx='20'/%3E%3Cpath d='M90,140 L110,140 L110,200 L90,200 Z' fill='%23FFFFFF'/%3E%3Ccircle cx='75' cy='100' r='8' fill='%23000000'/%3E%3Ccircle cx='125' cy='100' r='8' fill='%23000000'/%3E%3Cpath d='M70,120 Q100,140 130,120' stroke='%23000000' stroke-width='4' fill='none'/%3E%3Cpath d='M60,120 L140,120 L140,150 Q100,180 60,150 Z' fill='%231a1a1a'/%3E%3Cpath d='M55,90 L95,90' stroke='%231a1a1a' stroke-width='3'/%3E%3Cpath d='M105,90 L145,90' stroke='%231a1a1a' stroke-width='3'/%3E%3C/svg%3E" class="w-full h-full object-cover">
                     <div class="absolute inset-0 bg-black bg-opacity-30 opacity-0 group-hover:opacity-100 flex items-center justify-center transition">
-                        <i class="fas fa-camera text-white"></i>
+                        <i class="fas fa-pen text-white"></i>
                     </div>
                 </div>
-                <input type="file" id="avatar-upload" class="hidden" accept="image/*" onchange="game.handleAvatarUpload(event)">
                 <div class="absolute -bottom-2 -right-2 bg-orange-500 text-white text-xs font-bold px-2 py-0.5 rounded-full border-2 border-white z-20" id="level-badge">LVL 1</div>
             </div>
 
@@ -539,6 +538,48 @@
             <div class="spinner mx-auto mb-4"></div>
             <div class="text-white font-bold">Watching Ad...</div>
             <div class="text-gray-400 text-xs mt-2">Thanks for supporting the revolution!</div>
+        </div>
+    </div>
+
+    <!-- PLAYER PROFILE MODAL -->
+    <div id="profile-modal" class="fixed inset-0 modal-backdrop z-50 hidden flex items-center justify-center px-4">
+        <div class="bg-teal-800 rounded-xl shadow-2xl w-full max-w-sm overflow-hidden animate-bounce-in border-4 border-teal-900 flex flex-col max-h-[80vh]">
+            <div class="p-4 border-b-4 border-teal-900 flex justify-between items-center bg-teal-800 shrink-0">
+                <h2 class="text-white font-game text-xl">Player Profile</h2>
+                <button onclick="game.closeModal('profile-modal')" class="text-teal-200 hover:text-white"><i class="fas fa-times text-xl"></i></button>
+            </div>
+            
+            <div class="p-4 bg-teal-50 overflow-y-auto flex-1">
+                <!-- Section 1: Name -->
+                <div class="mb-6">
+                    <label class="block text-teal-900 font-bold text-xs uppercase mb-1">Revolutionary Name</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="player-name-input" class="flex-1 bg-white border-2 border-teal-300 rounded px-3 py-2 font-bold text-gray-800 focus:border-teal-600 outline-none shadow-inner" placeholder="Enter Name">
+                        <button onclick="game.saveProfileName()" class="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded font-bold text-xs shadow-[0_3px_0_rgb(21,128,61)] active:translate-y-0.5 active:shadow-none transition-all">SAVE</button>
+                    </div>
+                </div>
+
+                <!-- Section 2: Avatars -->
+                <div class="mb-6">
+                    <label class="block text-teal-900 font-bold text-xs uppercase mb-2">Choose Your Look</label>
+                    <div class="grid grid-cols-3 gap-3" id="avatar-grid">
+                        <!-- Injected via JS -->
+                    </div>
+                </div>
+
+                <!-- Section 3: Stats -->
+                <div>
+                    <label class="block text-teal-900 font-bold text-xs uppercase mb-2">Career Stats</label>
+                    <div class="bg-white rounded-lg border-2 border-teal-200 p-3 space-y-2 text-xs shadow-sm">
+                        <div class="flex justify-between items-center border-b border-gray-100 pb-1"><span class="text-gray-500 font-bold">Fundraise Taps</span> <span class="font-black text-teal-800 text-sm" id="stat-taps">0</span></div>
+                        <div class="flex justify-between items-center border-b border-gray-100 pb-1"><span class="text-gray-500 font-bold">Upgrades Bought</span> <span class="font-black text-teal-800 text-sm" id="stat-upgrades">0</span></div>
+                        <div class="flex justify-between items-center border-b border-gray-100 pb-1"><span class="text-gray-500 font-bold">Managers Hired</span> <span class="font-black text-teal-800 text-sm" id="stat-managers">0</span></div>
+                        <div class="flex justify-between items-center border-b border-gray-100 pb-1"><span class="text-gray-500 font-bold">Managers Promoted</span> <span class="font-black text-teal-800 text-sm" id="stat-mgr-upgrades">0</span></div>
+                        <div class="flex justify-between items-center border-b border-gray-100 pb-1"><span class="text-gray-500 font-bold">Quests Completed</span> <span class="font-black text-teal-800 text-sm" id="stat-quests">0</span></div>
+                        <div class="flex justify-between items-center pt-1"><span class="text-gray-500 font-bold">Max Cash Held</span> <span class="font-black text-green-600 text-sm" id="stat-max-cash">$0</span></div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -677,6 +718,18 @@
             "rent_control": [{ id: "housing_1", name: "Inspector Ivy", cost: 20000000, mult: 2, img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Ivy" }, { id: "housing_2", name: "Planner Paul", cost: 200000000, mult: 10, img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Paul" }, { id: "housing_3", name: "Director Don", cost: 2000000000, mult: 50, img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Don" }]
         };
 
+        const AVATAR_PRESETS = [
+            "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix",
+            "https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka",
+            "https://api.dicebear.com/7.x/avataaars/svg?seed=Bob",
+            "https://api.dicebear.com/7.x/avataaars/svg?seed=Calvin",
+            "https://api.dicebear.com/7.x/avataaars/svg?seed=Dwight",
+            "https://api.dicebear.com/7.x/avataaars/svg?seed=Eliza",
+            "https://api.dicebear.com/7.x/avataaars/svg?seed=Frank",
+            "https://api.dicebear.com/7.x/avataaars/svg?seed=Grace",
+            "https://api.dicebear.com/7.x/avataaars/svg?seed=Henry"
+        ];
+
         function formatNumber(num) {
             if (num >= 1e12) return "$" + (num / 1e12).toFixed(2) + "T";
             if (num >= 1e9) return "$" + (num / 1e9).toFixed(2) + "B";
@@ -712,13 +765,23 @@
                     activeManagers: {},
                     managerLevels: {}, 
                     progress: {},
-                    customAvatar: null,
+                    customAvatar: null, // For backward compatibility or manual uploads
                     activeMissions: {}, 
                     missionTimers: {}, 
                     missionCooldowns: {},
                     adBoostExpiry: 0,
                     missionCount: 0,
-                    adSlotUnlocked: false
+                    adSlotUnlocked: false,
+                    // New Profile Tracking
+                    playerName: "",
+                    stats: {
+                        taps: 0,
+                        upgrades: 0,
+                        managersHired: 0,
+                        managersUpgraded: 0,
+                        quests: 0,
+                        maxCash: 0
+                    }
                 };
                 this.affordableTrackers = {};
                 this.manualUsageTrackers = {}; 
@@ -820,8 +883,13 @@
                 this.startGameLoop();
                 this.updateUI();
                 this.updateLevelBadge();
-                if (this.state.customAvatar) document.getElementById('avatar-img').src = this.state.customAvatar;
-                document.querySelector('.avatar-container').addEventListener('click', (e) => { e.stopPropagation(); document.getElementById('avatar-upload').click(); });
+                // Set Avatar
+                if (this.state.customAvatar) {
+                    document.getElementById('avatar-img').src = this.state.customAvatar;
+                } else {
+                    // Default avatar
+                    document.getElementById('avatar-img').src = AVATAR_PRESETS[0];
+                }
             }
             
             watchAd(type) {
@@ -848,6 +916,54 @@
                     el.classList.add('animate-pulse-big');
                     setTimeout(() => el.classList.remove('animate-pulse-big'), 500);
                 });
+            }
+
+            // --- PROFILE & STATS ---
+            openProfileModal() {
+                const modal = document.getElementById('profile-modal');
+                const nameInput = document.getElementById('player-name-input');
+                const avatarGrid = document.getElementById('avatar-grid');
+                
+                // Set Name
+                nameInput.value = this.state.playerName || "";
+
+                // Render Stats
+                document.getElementById('stat-taps').innerText = this.state.stats.taps.toLocaleString();
+                document.getElementById('stat-upgrades').innerText = this.state.stats.upgrades.toLocaleString();
+                document.getElementById('stat-managers').innerText = this.state.stats.managersHired.toLocaleString();
+                document.getElementById('stat-mgr-upgrades').innerText = this.state.stats.managersUpgraded.toLocaleString();
+                document.getElementById('stat-quests').innerText = this.state.stats.quests.toLocaleString();
+                document.getElementById('stat-max-cash').innerText = "$" + formatNumber(this.state.stats.maxCash).replace("$", "");
+
+                // Render Avatar Grid
+                avatarGrid.innerHTML = "";
+                AVATAR_PRESETS.forEach(url => {
+                    const div = document.createElement('div');
+                    const isActive = this.state.customAvatar === url || (!this.state.customAvatar && url === AVATAR_PRESETS[0]);
+                    div.className = `aspect-square rounded-lg overflow-hidden border-4 cursor-pointer transition hover:scale-105 ${isActive ? 'border-green-500 ring-2 ring-green-300' : 'border-gray-300'}`;
+                    div.onclick = () => this.setAvatar(url);
+                    div.innerHTML = `<img src="${url}" class="w-full h-full object-cover bg-yellow-100">`;
+                    avatarGrid.appendChild(div);
+                });
+
+                modal.classList.remove('hidden');
+            }
+
+            saveProfileName() {
+                const nameInput = document.getElementById('player-name-input');
+                const name = nameInput.value.trim();
+                if(name) {
+                    this.state.playerName = name;
+                    this.showToast(`Welcome, ${name}!`);
+                    this.saveGame();
+                }
+            }
+
+            setAvatar(url) {
+                this.state.customAvatar = url;
+                document.getElementById('avatar-img').src = url;
+                this.openProfileModal(); // Re-render to show selection border
+                this.saveGame();
             }
 
             // --- MISSIONS ---
@@ -964,6 +1080,10 @@
                 if (m.reward.type === 'money') this.addInfluence(m.reward.val);
                 if (m.reward.type === 'theory') this.addTheoryPoint(m.reward.val);
                 this.showToast("Mission Completed!");
+                
+                // Track Stat
+                this.state.stats.quests++;
+
                 this.state.activeMissions[slot] = null;
                 if (slot === 0) this.state.missionCount++; 
                 if (slot === 1) this.state.missionCooldowns[1] = Date.now() + this.missionConfig.midSlotCooldown;
@@ -1033,9 +1153,6 @@
                         if (m.type === 'cash') progress = Math.min(100, (this.state.influence / m.amount) * 100);
                         if (m.type === 'click') progress = Math.min(100, (m.current / m.count) * 100);
                         
-                        // Only allow claiming if NOT claimable state (handled above), so essentially just ignore click or show details
-                        // div.onclick = () => { ... }; // Removed auto-claim click logic
-
                         let timerHtml = '';
                         if (slot === 1) {
                             const timeLeft = Math.max(0, (this.state.missionTimers[1] - Date.now()));
@@ -1222,7 +1339,9 @@
                         step.classList.add('active-step'); // Higher z-index
                         const avatar = document.createElement('div');
                         avatar.className = 'ladder-avatar';
-                        avatar.innerHTML = `<img src="${document.getElementById('avatar-img').src}" class="w-full h-full object-cover">`;
+                        // Use current avatar for climbing
+                        const avatarSrc = document.getElementById('avatar-img').src;
+                        avatar.innerHTML = `<img src="${avatarSrc}" class="w-full h-full object-cover">`;
                         avatar.id = 'climbing-avatar';
                         step.appendChild(avatar);
                     }
@@ -1298,6 +1417,10 @@
                 });
                 const val = 1 + (totalIPS * 0.05);
                 this.addInfluence(val);
+                
+                // Track Stat
+                this.state.stats.taps++;
+
                 this.spawnFloatText(e.clientX, e.clientY, `+${formatNumber(val)}`);
                 for (let i = 0; i < 3; i++) { 
                     if (this.state.activeMissions[i] && this.state.activeMissions[i].type === 'click') {
@@ -1311,6 +1434,12 @@
             addInfluence(amt) {
                 this.state.influence += amt;
                 this.state.lifetime += amt;
+                
+                // Track Stat
+                if (this.state.influence > this.state.stats.maxCash) {
+                    this.state.stats.maxCash = this.state.influence;
+                }
+
                 if (amt > 0) {
                     const txt = document.getElementById('money-text');
                     if (txt) {
@@ -1379,6 +1508,10 @@
                     const prevMult = this.getGenMultiplier(id);
                     this.state.influence -= cost;
                     this.state.generators[id]++;
+                    
+                    // Track Stat
+                    this.state.stats.upgrades++;
+
                     const newMult = this.getGenMultiplier(id);
                     if(this.state.generators[id] === 1) this.state.progress[id] = 0;
                     this.updateCardUI(id);
@@ -1604,6 +1737,10 @@
                     this.state.theoryPoints -= 5;
                     if(!this.state.managerLevels[mgrId]) this.state.managerLevels[mgrId] = 1;
                     this.state.managerLevels[mgrId]++;
+                    
+                    // Track Stat
+                    this.state.stats.managersUpgraded++;
+
                     this.updateHeader();
                     this.updateCardUI(genId);
                     this.openAllRepsModal();
@@ -1615,6 +1752,10 @@
                 if (this.state.influence >= cost) {
                     this.state.influence -= cost;
                     this.state.activeManagers[industryId] = mgrId;
+                    
+                    // Track Stat
+                    this.state.stats.managersHired++;
+
                     this.updateHeader();
                     this.updateCardUI(industryId);
                     if(!document.getElementById('manager-modal').classList.contains('hidden')) this.openManagerModal(industryId);
@@ -1889,6 +2030,18 @@
                         if(this.state.adBoostExpiry === undefined) this.state.adBoostExpiry = 0;
                         if(this.state.missionCount === undefined) this.state.missionCount = 0;
                         if(this.state.adSlotUnlocked === undefined) this.state.adSlotUnlocked = false;
+                        
+                        // Ensure stats exist
+                        if(!this.state.stats) {
+                            this.state.stats = {
+                                taps: 0,
+                                upgrades: 0,
+                                managersHired: 0,
+                                managersUpgraded: 0,
+                                quests: 0,
+                                maxCash: 0
+                            };
+                        }
                     } catch(e) { console.log('Save corrupted'); }
                 } else {
                     this.state.levelStartTime = Date.now();

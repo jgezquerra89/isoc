@@ -452,17 +452,166 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        /* STIMULUS CHECK OVERLAY */
+        #stimulus-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 100; /* Above missions */
+            overflow: hidden;
+            pointer-events: none; /* Let clicks pass unless clicking the flyer */
+        }
+        
+        .flyer-bill {
+            position: absolute;
+            top: 10px;
+            left: -80px;
+            width: 60px;
+            height: 30px;
+            background: #22c55e; /* Green-500 */
+            border: 2px solid #14532d; /* Green-900 */
+            border-radius: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #bbf7d0; /* Green-200 */
+            font-size: 1.2rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            pointer-events: auto;
+            cursor: pointer;
+            animation: bounceFly 0.8s infinite ease-in-out, flyAcross 8s linear forwards;
+        }
+        /* Wings */
+        .flyer-bill::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: 5px;
+            width: 15px;
+            height: 10px;
+            background: white;
+            border-radius: 50% 50% 0 0;
+            transform: rotate(-20deg);
+            animation: flapLeft 0.2s infinite alternate;
+        }
+        .flyer-bill::after {
+            content: '';
+            position: absolute;
+            top: -10px;
+            right: 5px;
+            width: 15px;
+            height: 10px;
+            background: white;
+            border-radius: 50% 50% 0 0;
+            transform: rotate(20deg);
+            animation: flapRight 0.2s infinite alternate;
+        }
+        
+        @keyframes flyAcross {
+            0% { left: -80px; top: 5px; }
+            100% { left: 120%; top: 50px; } /* Moves closer to bottom edge */
+        }
+        @keyframes bounceFly {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+        @keyframes flapLeft {
+            from { transform: rotate(-20deg) translateY(0); }
+            to { transform: rotate(-40deg) translateY(-5px); }
+        }
+        @keyframes flapRight {
+            from { transform: rotate(20deg) translateY(0); }
+            to { transform: rotate(40deg) translateY(-5px); }
+        }
+        /* MANAGER UPGRADE ANIMATION */
+.upgrade-overlay-container {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 99999; /* Above everything */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.flying-manager-icon {
+    position: fixed;
+    z-index: 100000;
+    border-radius: 50%;
+    border: 4px solid #FACC15; /* Gold border */
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.upgrade-text-box {
+    position: absolute;
+    top: 60%; /* Below the centered icon */
+    background: rgba(0,0,0,0.8);
+    border: 2px solid #FACC15;
+    border-radius: 15px;
+    padding: 10px 20px;
+    text-align: center;
+    opacity: 0;
+    transform: scale(0.5);
+    transition: all 0.3s ease-out;
+    z-index: 100001;
+}
+
+.upgrade-text-box.visible {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.upgrade-label {
+    color: #FFF;
+    font-size: 12px;
+    text-transform: uppercase;
+    font-weight: bold;
+    font-family: sans-serif;
+}
+
+.upgrade-value {
+    font-family: 'Titan One', cursive;
+    color: #FACC15;
+    font-size: 32px;
+    text-shadow: 0 2px 0 #000;
+}
+/* ... existing styles ... */
+
+/* NEW ANIMATIONS FOR MISSION LOCK */
+@keyframes lockShake {
+    0% { transform: rotate(0deg); }
+    25% { transform: rotate(10deg); }
+    50% { transform: rotate(0deg); }
+    75% { transform: rotate(-10deg); }
+    100% { transform: rotate(0deg); }
+}
+@keyframes lockOpen {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.4); opacity: 0.8; }
+    100% { transform: scale(2); opacity: 0; }
+}
+
+.animate-lock-shake {
+    animation: lockShake 0.3s infinite ease-in-out;
+    color: #FACC15 !important; /* Turn Gold */
+}
+.animate-lock-open {
+    animation: lockOpen 0.5s forwards ease-out;
+}
     </style>
 </head>
 <body class="h-screen flex flex-col text-gray-900">
 
     <div class="city-skyline"></div>
 
-    <!-- Top Bar -->
     <header class="bg-teal-800 border-b-4 border-teal-900 p-2 z-20 shadow-xl relative">
         <div class="max-w-md mx-auto flex justify-between items-center relative">
             
-            <!-- Avatar -->
             <div class="relative group cursor-pointer" onclick="game.openProfileModal()">
                 <div class="w-16 h-16 rounded-full border-4 border-white shadow-lg overflow-hidden bg-yellow-300 relative z-10 avatar-container hover:scale-105 transition-transform">
                     <img id="avatar-img" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' fill='%23FDD835'/%3E%3Ccircle cx='100' cy='100' r='80' fill='%238D5524'/%3E%3Cpath d='M50,80 Q100,20 150,80 L150,120 Q100,180 50,120 Z' fill='%238D5524'/%3E%3Cpath d='M40,80 Q100,-20 160,80 L160,100 L40,100 Z' fill='%231a1a1a'/%3E%3Crect x='50' y='140' width='100' height='60' fill='%23333' rx='20'/%3E%3Cpath d='M90,140 L110,140 L110,200 L90,200 Z' fill='%23FFFFFF'/%3E%3Ccircle cx='75' cy='100' r='8' fill='%23000000'/%3E%3Ccircle cx='125' cy='100' r='8' fill='%23000000'/%3E%3Cpath d='M70,120 Q100,140 130,120' stroke='%23000000' stroke-width='4' fill='none'/%3E%3Cpath d='M60,120 L140,120 L140,150 Q100,180 60,150 Z' fill='%231a1a1a'/%3E%3Cpath d='M55,90 L95,90' stroke='%231a1a1a' stroke-width='3'/%3E%3Cpath d='M105,90 L145,90' stroke='%231a1a1a' stroke-width='3'/%3E%3C/svg%3E" class="w-full h-full object-cover">
@@ -473,17 +622,14 @@
                 <div class="absolute -bottom-2 -right-2 bg-orange-500 text-white text-xs font-bold px-2 py-0.5 rounded-full border-2 border-white z-20" id="level-badge">LVL 1</div>
             </div>
 
-            <!-- Currencies -->
             <div class="flex-1 mx-2 flex flex-col gap-1">
                 <div class="flex gap-1">
                     <div class="bg-teal-900 rounded-full p-1 border-2 border-teal-600 flex-1 h-8 flex items-center justify-center" id="money-container">
                         <div class="text-center text-white font-game text-sm tracking-wide leading-none money-normal" id="money-text">
                             <span class="text-green-400 mr-1">$</span><span id="influence-display">0</span>
-                            <!-- RESTORED BOOST BADGE TO PREVENT CRASH -->
                             <span id="boost-badge" class="hidden text-[9px] bg-yellow-400 text-black px-1 rounded ml-1 animate-pulse">x2</span>
                         </div>
                     </div>
-                    <!-- UPDATED TOOLTIP TRIGGER -->
                     <div id="theory-counter-target" class="bg-blue-900 rounded-full p-1 border-2 border-blue-600 w-16 h-8 flex items-center justify-center cursor-pointer active:scale-95 transition" title="Theory Points">
                         <div class="text-center text-white font-game text-sm tracking-wide leading-none">
                             <span class="text-blue-300 mr-1">📘</span><span id="theory-display">0</span>
@@ -498,18 +644,21 @@
                 </div>
             </div>
 
-            <!-- Settings -->
             <div class="flex flex-col gap-1">
-                <!-- Changed Save Button to Advance Button -->
                 <button onclick="game.showPrestigeModal()" class="bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold px-2 py-1 rounded border-b-2 border-purple-800 active:translate-y-1">ADVANCE</button>
                 <button onclick="game.hardReset()" class="bg-red-600 hover:bg-red-500 text-white text-xs font-bold px-2 py-1 rounded border-b-2 border-red-800 active:translate-y-1">RESET</button>
             </div>
         </div>
     </header>
 
-    <!-- Mission Bar Container -->
     <div class="bg-teal-700 w-full z-10 shadow-md relative border-b-4 border-teal-800">
-        <div id="mission-container" class="max-w-md mx-auto grid grid-cols-3 gap-2 p-2"></div>
+        <div id="mission-container" class="max-w-md mx-auto grid grid-cols-3 gap-2 p-2 relative z-10"></div>
+        
+        <div id="stimulus-overlay" class="hidden">
+            <div id="stimulus-flyer" class="flyer-bill" onclick="game.openStimulusModal(event)">
+                <i class="fas fa-money-bill-wave"></i>
+            </div>
+        </div>
     </div>
 
     <main class="flex-1 overflow-y-auto relative pb-24 pt-4 px-2 z-10" id="scroll-container">
@@ -525,10 +674,8 @@
             <button class="flex flex-col items-center text-teal-300 hover:text-white transition relative" onclick="game.openAllRepsModal()">
                 <i class="fas fa-user-tie text-2xl mb-1 drop-shadow-md"></i>
                 <span class="text-[10px] font-bold uppercase">Reps</span>
-                <!-- Red Tip -->
                 <div id="rep-notification" class="notification-dot hidden"></div>
             </button>
-            <!-- NEW PROPERTIES BUTTON -->
             <button class="flex flex-col items-center text-teal-300 hover:text-white transition" onclick="game.openPropertiesModal()">
                 <i class="fas fa-home text-2xl mb-1 drop-shadow-md"></i>
                 <span class="text-[10px] font-bold uppercase">Properties</span>
@@ -537,7 +684,6 @@
                 <i class="fas fa-bullhorn text-2xl mb-1 drop-shadow-md"></i>
                 <span class="text-[10px] font-bold uppercase">Fundraise</span>
             </button>
-            <!-- NEW AD BOOST BUTTON -->
             <button id="ad-boost-btn" class="flex flex-col items-center text-teal-300 hover:text-white transition" onclick="game.watchAd('boost')">
                 <i class="fas fa-tv text-2xl mb-1 drop-shadow-md"></i>
                 <span class="text-[10px] font-bold uppercase" id="ad-boost-text">Boost</span>
@@ -545,16 +691,44 @@
         </div>
     </nav>
 
-    <!-- AD WATCH MODAL -->
     <div id="ad-modal" class="fixed inset-0 bg-black z-50 hidden flex items-center justify-center">
-        <div class="text-center">
+        <div class="text-center w-64">
             <div class="spinner mx-auto mb-4"></div>
-            <div class="text-white font-bold">Watching Ad...</div>
-            <div class="text-gray-400 text-xs mt-2">Thanks for supporting the revolution!</div>
+            <div class="text-white font-bold text-lg">Watching Ad...</div>
+            <div class="w-full bg-gray-700 h-2 rounded-full mt-3 overflow-hidden">
+                <div id="ad-progress-bar" class="h-full bg-green-500 w-0 transition-all duration-300 ease-linear"></div>
+            </div>
+            <div class="text-gray-400 text-xs mt-2" id="ad-timer-text">Please wait 3s...</div>
         </div>
     </div>
 
-    <!-- PLAYER PROFILE MODAL -->
+    <div id="stimulus-modal" class="fixed inset-0 modal-backdrop z-50 hidden flex items-center justify-center px-4">
+        <div class="bg-blue-900 rounded-xl shadow-2xl w-full max-w-sm overflow-hidden border-4 border-yellow-400 animate-bounce-in text-center relative">
+            <div class="p-6 text-white relative">
+                <button onclick="game.closeStimulusModal()" class="absolute top-2 right-2 text-blue-300 hover:text-white"><i class="fas fa-times text-xl"></i></button>
+                
+                <div class="mb-4 flex justify-center">
+                    <div class="w-20 h-20 rounded-full border-4 border-white overflow-hidden bg-gray-300">
+                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Senator" class="w-full h-full object-cover">
+                    </div>
+                </div>
+                
+                <h2 class="font-game text-xl mb-1 uppercase text-yellow-300 leading-tight">Senator Spend</h2>
+                <p class="text-sm mb-4 text-blue-100 italic">"A stimulus package for the people!"</p>
+                
+                <div class="bg-blue-800 rounded p-3 mb-4 border border-blue-600">
+                    <div class="text-xs uppercase text-blue-300">Stimulus Amount</div>
+                    <div class="text-2xl font-bold text-green-400" id="stimulus-amount-display">$0</div>
+                    <div class="text-[10px] text-blue-200">Equal to 60s of production</div>
+                </div>
+                
+                <button onclick="game.watchStimulusAd()" class="w-full bg-green-600 hover:bg-green-500 text-white font-black text-lg py-3 rounded shadow-[0_4px_0_rgb(21,128,61)] active:translate-y-1 transition-all flex items-center justify-center gap-2">
+                    <i class="fas fa-tv"></i> ACCEPT CHECK
+                </button>
+            </div>
+        </div>
+    </div>
+
     <div id="profile-modal" class="fixed inset-0 modal-backdrop z-50 hidden flex items-center justify-center px-4">
         <div class="bg-teal-800 rounded-xl shadow-2xl w-full max-w-sm overflow-hidden animate-bounce-in border-4 border-teal-900 flex flex-col max-h-[80vh]">
             <div class="p-4 border-b-4 border-teal-900 flex justify-between items-center bg-teal-800 shrink-0">
@@ -563,7 +737,6 @@
             </div>
             
             <div class="p-4 bg-teal-50 overflow-y-auto flex-1">
-                <!-- Section 1: Name -->
                 <div class="mb-6">
                     <label class="block text-teal-900 font-bold text-xs uppercase mb-1">Revolutionary Name</label>
                     <div class="flex gap-2">
@@ -572,15 +745,12 @@
                     </div>
                 </div>
 
-                <!-- Section 2: Avatars -->
                 <div class="mb-6">
                     <label class="block text-teal-900 font-bold text-xs uppercase mb-2">Choose Your Look</label>
                     <div class="grid grid-cols-3 gap-3" id="avatar-grid">
-                        <!-- Injected via JS -->
-                    </div>
+                        </div>
                 </div>
 
-                <!-- Section 3: Stats -->
                 <div>
                     <label class="block text-teal-900 font-bold text-xs uppercase mb-2">Career Stats</label>
                     <div class="bg-white rounded-lg border-2 border-teal-200 p-3 space-y-2 text-xs shadow-sm">
@@ -596,7 +766,6 @@
         </div>
     </div>
 
-    <!-- PROPERTIES MODAL -->
     <div id="properties-modal" class="fixed inset-0 modal-backdrop z-50 hidden flex items-center justify-center px-4">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm overflow-hidden animate-bounce-in flex flex-col max-h-[80vh]">
             <div class="bg-teal-800 p-4 flex justify-between items-center border-b-4 border-teal-900 shrink-0">
@@ -607,12 +776,10 @@
                 <i class="fas fa-info-circle mr-1"></i> Buy Properties to show your influence!
             </div>
             <div class="p-4 bg-teal-50 overflow-y-auto flex-1" id="properties-list">
-                <!-- List Injected via JS -->
-            </div>
+                </div>
         </div>
     </div>
 
-    <!-- Modals -->
     <div id="manager-modal" class="fixed inset-0 modal-backdrop z-50 hidden flex items-center justify-center px-4">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm overflow-hidden animate-bounce-in">
             <div class="bg-teal-800 p-4 flex justify-between items-center border-b-4 border-teal-900">
@@ -639,21 +806,17 @@
         </div>
     </div>
 
-    <!-- Level Ladder Overlay -->
     <div id="level-ladder-overlay" class="fixed inset-0 hidden flex flex-col items-center justify-center">
         <div class="text-white font-game text-2xl mb-4 drop-shadow-md mt-10 relative z-10">ADVANCING...</div>
-        <!-- Make container scrollable/fit -->
         <div class="w-full flex-1 overflow-hidden flex justify-center relative z-10">
              <div class="ladder-container flex flex-col-reverse" id="ladder-steps">
-                <!-- Steps injected via JS -->
-            </div>
+                </div>
         </div>
     </div>
 
     <div id="prestige-modal" class="fixed inset-0 modal-backdrop z-50 hidden flex items-center justify-center px-4">
         <div class="bg-red-900 rounded-xl shadow-2xl w-full max-w-sm overflow-hidden border-4 border-yellow-500 animate-bounce-in text-center">
             <div class="p-6 bg-red-800 text-white relative">
-                <!-- Added Close Button -->
                 <button onclick="game.closePrestigeModal()" class="absolute top-2 right-2 text-red-300 hover:text-white"><i class="fas fa-times text-xl"></i></button>
                 
                 <i class="fas fa-fist-raised text-6xl text-yellow-400 mb-4 animate-pulse"></i>
@@ -670,7 +833,6 @@
         </div>
     </div>
 
-    <!-- REVOLUTION OVERLAY with SVG ART -->
     <div id="revolution-overlay" class="fixed inset-0 hidden">
         <div class="relative w-full h-full overflow-hidden">
             <div id="mayor-runner" class="runner-mayor">
@@ -687,7 +849,6 @@
 
     <div id="toast-container" class="fixed bottom-24 left-1/2 transform -translate-x-1/2 flex flex-col gap-2 pointer-events-none z-50 w-full max-w-xs px-4"></div>
 
-    <!-- Generator Template -->
     <template id="generator-template">
         <div class="bg-teal-700 rounded-xl p-2 shadow-[0_4px_0_rgba(0,0,0,0.2)] border-2 border-teal-900 relative overflow-hidden group">
             <div class="flex items-center gap-2 mb-2 manual-trigger-area">
@@ -841,16 +1002,15 @@
                     activeManagers: {},
                     managerLevels: {}, 
                     progress: {},
-                    customAvatar: null, // For backward compatibility or manual uploads
+                    customAvatar: null, 
                     activeMissions: {}, 
                     missionTimers: {}, 
                     missionCooldowns: {},
                     adBoostExpiry: 0,
                     missionCount: 0,
                     adSlotUnlocked: false,
-                    // New Profile Tracking
                     playerName: "",
-                    ownedProperties: [], // Track property IDs
+                    ownedProperties: [],
                     stats: {
                         taps: 0,
                         upgrades: 0,
@@ -858,13 +1018,18 @@
                         managersUpgraded: 0,
                         quests: 0,
                         maxCash: 0
-                    }
+                    },
+                    // New Stimulus Check State
+                    lastStimulusTime: Date.now(),
+                    stimulusActive: false
                 };
                 this.affordableTrackers = {};
                 this.manualUsageTrackers = {}; 
                 this.buyButtonPulseTrackers = {}; 
+                this.midSlotUnlocking = false;
                 this.buyInterval = null;
                 this.moneyPulseTimeout = null;
+                this.stimulusAnimationTimeout = null;
                 
                 GENERATORS_DATA.forEach(g => {
                     this.state.generators[g.id] = 0;
@@ -921,7 +1086,6 @@
                     'legendary': 20 // Orange
                 };
                 const base = baseCosts[mgr.rarity] || 5;
-                // Cost = Base * Current Level
                 return base * currentLvl;
             }
 
@@ -985,7 +1149,6 @@
                 if(theoryTarget) {
                     theoryTarget.onclick = (e) => {
                         e.stopPropagation();
-                        // Show longer lasting context toast
                         this.showContextToast(theoryTarget, "Use Theory Points to Upgrade Reps!", "info", 2500);
                     };
                 }
@@ -994,19 +1157,39 @@
             watchAd(type) {
                 const modal = document.getElementById('ad-modal');
                 modal.classList.remove('hidden');
+                
+                // Reset Ad UI
+                const bar = document.getElementById('ad-progress-bar');
+                const text = document.getElementById('ad-timer-text');
+                bar.style.width = '0%';
+                text.innerText = "Please wait 3s...";
+                
+                // Animate Ad
+                setTimeout(() => bar.style.width = '100%', 100);
+                
+                let timeLeft = 3;
+                const timer = setInterval(() => {
+                    timeLeft--;
+                    if(timeLeft > 0) text.innerText = `Please wait ${timeLeft}s...`;
+                    else {
+                        text.innerText = "Done!";
+                        clearInterval(timer);
+                    }
+                }, 1000);
+
                 setTimeout(() => {
                     modal.classList.add('hidden');
                     if (type === 'boost') {
                         this.state.adBoostExpiry = Date.now() + 600000; 
                         this.showToast("x2 Boost Activated!");
-                        this.animateGlobalPulse(); // Trigger pulse
+                        this.animateGlobalPulse(); 
                     } else if (type === 'mission') {
                         this.state.adSlotUnlocked = true;
                         this.generateMission(2); 
                         this.showToast("Mission Slot Unlocked!");
                     }
                     this.updateUI();
-                }, 3000);
+                }, 3500);
             }
             
             animateGlobalPulse() {
@@ -1017,7 +1200,7 @@
                 });
             }
 
-            // --- PROPERTIES LOGIC ---
+            // ... (Other UI methods like properties) ...
             openPropertiesModal() {
                 const modal = document.getElementById('properties-modal');
                 const list = document.getElementById('properties-list');
@@ -1068,27 +1251,139 @@
 
                 if(this.state.influence >= prop.cost) {
                     this.state.influence -= prop.cost;
+                    this.updateMissionProgress('spend_cash', prop.cost);
+                    this.updateMissionProgress('buy_property', 1, id);
                     this.state.ownedProperties.push(id);
                     this.updateHeader();
-                    this.openPropertiesModal(); // Refresh UI
+                    this.openPropertiesModal(); 
                     this.showToast(`Purchased ${prop.name}!`);
-                    
-                    // Confetti effect or visual feedback could go here
                 } else {
                     this.showToast("Not enough funds!");
                 }
             }
 
-            // --- PROFILE & STATS ---
+            // --- STIMULUS CHECK LOGIC ---
+            checkStimulus() {
+                if(this.state.stimulusActive) return;
+                
+                // Check if 120 seconds have passed since last stimulus
+                if(Date.now() - this.state.lastStimulusTime > 120000) {
+                    this.triggerStimulus();
+                }
+            }
+
+            triggerStimulus() {
+                this.state.stimulusActive = true;
+                this.state.lastStimulusTime = Date.now();
+                
+                const overlay = document.getElementById('stimulus-overlay');
+                const flyer = document.getElementById('stimulus-flyer');
+                
+                overlay.classList.remove('hidden');
+                
+                // Start Animation
+                // Reset animation to ensure it plays
+                flyer.style.animation = 'none';
+                flyer.offsetHeight; /* trigger reflow */
+                flyer.style.animation = 'bounceFly 0.8s infinite ease-in-out, flyAcross 8s linear forwards';
+                
+                // Auto-close if not clicked
+                this.stimulusAnimationTimeout = setTimeout(() => {
+                    this.endStimulus();
+                }, 8000); // Match animation duration
+            }
+
+            endStimulus() {
+                this.state.stimulusActive = false;
+                const overlay = document.getElementById('stimulus-overlay');
+                overlay.classList.add('hidden');
+                
+                const flyer = document.getElementById('stimulus-flyer');
+                flyer.style.animation = 'none'; // Reset animation
+                
+                if(this.stimulusAnimationTimeout) clearTimeout(this.stimulusAnimationTimeout);
+            }
+
+            openStimulusModal(e) {
+                e.stopPropagation();
+                // Pause the auto-close timeout so user has time to decide
+                if(this.stimulusAnimationTimeout) clearTimeout(this.stimulusAnimationTimeout);
+                
+                // Calculate potential reward
+                let totalIPS = 0;
+                GENERATORS_DATA.forEach(g => {
+                    if(this.state.generators[g.id] > 0) {
+                         totalIPS += this.getGenRevenue(g.id) / (g.cycleTime/1000);
+                    }
+                });
+                // If IPS is 0, give a pity amount
+                if(totalIPS === 0) totalIPS = 10;
+                
+                const reward = Math.floor(totalIPS * 60);
+                
+                document.getElementById('stimulus-amount-display').innerText = "$" + formatNumber(reward).replace("$","");
+                document.getElementById('stimulus-modal').classList.remove('hidden');
+            }
+
+            closeStimulusModal() {
+                document.getElementById('stimulus-modal').classList.add('hidden');
+                this.endStimulus();
+            }
+
+            watchStimulusAd() {
+                // Simulate Ad Watch
+                document.getElementById('stimulus-modal').classList.add('hidden');
+                const adModal = document.getElementById('ad-modal');
+                adModal.classList.remove('hidden');
+                
+                // Reset Ad UI
+                const bar = document.getElementById('ad-progress-bar');
+                const text = document.getElementById('ad-timer-text');
+                bar.style.width = '0%';
+                text.innerText = "Please wait 3s...";
+                
+                // Animate Ad
+                setTimeout(() => bar.style.width = '100%', 100);
+                
+                let timeLeft = 3;
+                const timer = setInterval(() => {
+                    timeLeft--;
+                    if(timeLeft > 0) text.innerText = `Please wait ${timeLeft}s...`;
+                    else {
+                        text.innerText = "Done!";
+                        clearInterval(timer);
+                    }
+                }, 1000);
+                
+                setTimeout(() => {
+                    adModal.classList.add('hidden');
+                    
+                    // Calculate and Grant Reward
+                    let totalIPS = 0;
+                    GENERATORS_DATA.forEach(g => {
+                        if(this.state.generators[g.id] > 0) {
+                             totalIPS += this.getGenRevenue(g.id) / (g.cycleTime/1000);
+                        }
+                    });
+                    if(totalIPS === 0) totalIPS = 10;
+                    const reward = Math.floor(totalIPS * 60);
+                    
+                    this.addInfluence(reward);
+                    this.showToast(`Received Stimulus: $${formatNumber(reward).replace("$","")}`);
+                    this.animateGlobalPulse();
+                    
+                    this.endStimulus();
+                }, 3500);
+            }
+
+            // ... (Profile methods) ...
             openProfileModal() {
                 const modal = document.getElementById('profile-modal');
                 const nameInput = document.getElementById('player-name-input');
                 const avatarGrid = document.getElementById('avatar-grid');
                 
-                // Set Name
                 nameInput.value = this.state.playerName || "";
 
-                // Render Stats
                 document.getElementById('stat-taps').innerText = this.state.stats.taps.toLocaleString();
                 document.getElementById('stat-upgrades').innerText = this.state.stats.upgrades.toLocaleString();
                 document.getElementById('stat-managers').innerText = this.state.stats.managersHired.toLocaleString();
@@ -1096,7 +1391,6 @@
                 document.getElementById('stat-quests').innerText = this.state.stats.quests.toLocaleString();
                 document.getElementById('stat-max-cash').innerText = "$" + formatNumber(this.state.stats.maxCash).replace("$", "");
 
-                // Render Avatar Grid
                 avatarGrid.innerHTML = "";
                 AVATAR_PRESETS.forEach(url => {
                     const div = document.createElement('div');
@@ -1123,100 +1417,210 @@
             setAvatar(url) {
                 this.state.customAvatar = url;
                 document.getElementById('avatar-img').src = url;
-                this.openProfileModal(); // Re-render to show selection border
+                this.openProfileModal(); 
                 this.saveGame();
             }
+            
+            // Calculate Income Per Second for Balancing
+            calculateIPS() {
+                let ips = 0;
+                GENERATORS_DATA.forEach (g => {
+                    if (this.state.generators[g.id] > 0) {
+                        // Revenue per second = Revenue / (CycleTime in seconds)
+                        let cycleS = g.cycleTime / 1000;
+                        let rev = this.getGenRevenue(g.id);
+                        ips += rev / cycleS;
+                    }
+                });
+                // Return at least 1 to prevent division by zero errors in early game
+                return ips > 0 ? ips : 1;
+            }
+            
+            // Centralized progress updater for Action type quests
+            updateMissionProgress(type, amount, targetId) {
+                for (let i = 0; i < 3; i++) {
+                    const m = this.state.activeMissions[i];
+                    if (!m) continue;
 
+                    // Check if mission type matches
+                    if (m.type === type) {
+                        // If mission has specific target (like taxes) check it matches
+                        if (m.target && m.target !== targetId) continue;
+
+                        //Increment progress
+                        m.current = (m.current || 0) + amount;
+
+                        // Trigger UI update
+                        this.renderMissions();
+                    }
+                }
+            }
+            
             // --- MISSIONS ---
             generateMission(slot) {
                 let mission = {};
+                const ips = this.calculateIPS();
+
+                // --- FIXED QUEST LINE (Slot 0 only) ---
                 if (slot === 0) {
                     if (this.state.missionCount === 0) {
-                         mission = { icon: "📣", type: 'click', count: 50, current: 0, reward: { type: 'money', val: 500 }, text: "Fundraise 50 times" };
-                         this.state.activeMissions[slot] = mission;
-                         this.renderMissions();
-                         return;
+                        this.state.activeMissions[slot] = { type: 'buy_generator', target: 'taxes', count: 5, current: 0, reward: { type: 'money', val: ips * 100 }, text: "Buy 5 Tax Collection", icon: "💰" };
+                        this.renderMissions(); return;
                     }
                     if (this.state.missionCount === 1) {
-                        let rewardVal = Math.max(100, this.getGenCost('taxes') * 5);
-                        mission = { icon: "💰", type: 'buy', target: 'taxes', count: 10, reward: { type: 'money', val: rewardVal }, text: `Own 10 Tax Collection` };
-                        this.state.activeMissions[slot] = mission;
-                        this.renderMissions();
-                        return;
+                        this.state.activeMissions [slot] = { type: 'buy_generator', target: 'taxes', count: 5, current: 0, reward: { type: 'money', val: ips * 20}, text: "Buy 5 Tax Collection", icon: "💰"};
+                        this.renderMissions(); return;
+                    }
+                    if (this.state.missionCount === 2) {
+                        this.state.activeMissions[slot] = { type: 'fundraise', count: 20, current: 0, reward: { type: 'money', val: 500 }, text: "Fundraise 20 Times", icon: "📣" };
+                        this.renderMissions(); return;
+                    }
+                    if (this.state.missionCount === 3) {
+                        this.state.activeMissions[slot] = { type: 'hire_rep', target: 'taxes', reward: { type: 'money', val: ips * 20 }, text: "Hire Tax Rep", icon: "👔" };
+                        this.renderMissions(); return;
                     }
                 }
 
-                const isDuplicate = (newM) => {
-                    return Object.entries(this.state.activeMissions).some(([key, existing]) => {
-                        if (Number(key) === slot) return false;
-                        if (!existing) return false;
-                        if (newM.type === 'buy' && existing.type === 'buy' && newM.target === existing.target) return true;
-                        if (newM.type === 'click' && existing.type === 'click') return true;
-                        if (newM.type === 'cash' && existing.type === 'cash') return true;
-                        return false;
+                // --- PROCEDURAL QUEST GENERATION ---
+                // Balancing: 45s of IPS (Standard) or 60s (Time Limited Slot 1)
+                const duration = (slot === 1) ? 60 : 45; 
+                const targetVal = ips * duration;
+
+                // Filter available types based on game state
+                const types = ['spend_cash', 'spend_theory', 'buy_generator', 'own_generators', 'reach_unhappiness', 'fundraise'];
+                
+                const unownedProps = PROPERTIES_DATA.filter(p => !this.state.ownedProperties.includes(p.id));
+                if (unownedProps.length > 0) types.push('buy_property');
+                
+                const unhiredReps = Object.keys(MANAGER_OPTIONS).filter(k => !this.state.activeManagers[k]);
+                if (unhiredReps.length > 0) types.push('hire_rep');
+
+                const selectedType = types[Math.floor(Math.random() * types.length)];
+                mission.type = selectedType;
+
+                // --- TARGET CONFIGURATION ---
+                if (selectedType === 'spend_cash') {
+                    mission.count = Math.floor(targetVal);
+                    mission.current = 0;
+                    mission.text = `Spend $${formatNumber(mission.count)}`;
+                    mission.icon = "💸";
+                } 
+                else if (selectedType === 'spend_theory') {
+                    mission.count = Math.max(1, Math.floor(this.state.level)); 
+                    mission.current = 0;
+                    mission.text = `Spend ${mission.count} Theory`;
+                    mission.icon = "📘";
+                } 
+                else if (selectedType === 'buy_generator') {
+                    // Pick random generator
+                    const gen = GENERATORS_DATA[Math.floor(Math.random() * GENERATORS_DATA.length)];
+                    const cost = this.getGenCost(gen.id);
+                    // Calculate how many we can buy for targetVal (min 1)
+                    let amount = Math.max(1, Math.floor(targetVal / Math.max(1, cost)));
+                    mission.target = gen.id;
+                    mission.count = amount;
+                    mission.current = 0;
+                    mission.text = `Buy ${amount} ${gen.name}`;
+                    mission.icon = gen.icon;
+                } 
+                else if (selectedType === 'own_generators') {
+                    const gen = GENERATORS_DATA[Math.floor(Math.random() * GENERATORS_DATA.length)];
+                    const cost = this.getGenCost(gen.id);
+                    let amount = Math.max(1, Math.floor(targetVal / Math.max(1, cost)));
+                    mission.target = gen.id;
+                    mission.count = this.state.generators[gen.id] + amount;
+                    mission.text = `Own ${mission.count} ${gen.name}`;
+                    mission.icon = gen.icon;
+                } 
+                else if (selectedType === 'reach_unhappiness') {
+                    // Estimate unhappiness growth
+                    let unhPerSec = 0;
+                    GENERATORS_DATA.forEach(g => { 
+                        if(this.state.generators[g.id]>0) unhPerSec += this.getGenUnhappiness(g.id) / (g.cycleTime/1000);
                     });
-                };
+                    // Target is current + projected growth
+                    const targetUnh = this.state.unhappiness + (unhPerSec * duration);
+                    mission.count = Math.max(this.state.unhappiness + 100, Math.floor(targetUnh));
+                    mission.text = `Reach ${formatUnhappiness(mission.count)} Anger`;
+                    mission.icon = "😡";
+                } 
+                else if (selectedType === 'buy_property') {
+                    const prop = unownedProps[Math.floor(Math.random() * unownedProps.length)];
+                    mission.target = prop.id;
+                    mission.text = `Buy ${prop.name}`;
+                    mission.icon = prop.icon;
+                } 
+                else if (selectedType === 'fundraise') {
+                    mission.count = 60; // Fixed count for better UX
+                    mission.current = 0;
+                    mission.text = `Fundraise ${mission.count} Times`;
+                    mission.icon = "📣";
+                } 
+                else if (selectedType === 'hire_rep') {
+                    const repId = unhiredReps[Math.floor(Math.random() * unhiredReps.length)];
+                    const genName = GENERATORS_DATA.find(g => g.id === repId).name;
+                    mission.target = repId;
+                    mission.text = `Hire ${genName} Rep`;
+                    mission.icon = "👔";
+                }
 
-                let attempts = 0;
-                do {
-                    attempts++;
-                    const type = Math.random();
-                    const unlockedGens = GENERATORS_DATA.filter(g => this.state.generators[g.id] > 0);
-                    let targetGen = unlockedGens.length > 0 
-                        ? unlockedGens[Math.floor(Math.random() * unlockedGens.length)] 
-                        : GENERATORS_DATA[0];
-                    
-                    if (Math.random() < 0.3 && unlockedGens.length < GENERATORS_DATA.length) {
-                         const nextIdx = GENERATORS_DATA.findIndex(g => g.id === targetGen.id) + 1;
-                         if (nextIdx < GENERATORS_DATA.length) targetGen = GENERATORS_DATA[nextIdx];
-                    }
+                // --- REWARD LOGIC ---
+                // Slot 0: 50% Cash, 50% Theory
+                // Slot 1/2: 40% Cash, 40% Theory, 20% Unhappiness
+                let rnd = Math.random();
+                let rewardType = 'money';
+                
+                if (slot === 0) {
+                    if (rnd > 0.5) rewardType = 'theory';
+                } else {
+                    if (rnd < 0.4) rewardType = 'money';
+                    else if (rnd < 0.8) rewardType = 'theory';
+                    else rewardType = 'unhappiness';
+                }
 
-                    let currentCount = this.state.generators[targetGen.id] || 0;
-                    let targetCount = currentCount + 10;
-
-                    if (type < 0.4) {
-                        let cost = this.getGenCost(targetGen.id);
-                        let rewardVal = Math.max(100, cost * 5);
-                        mission = { icon: targetGen.icon, type: 'buy', target: targetGen.id, count: targetCount, reward: { type: 'money', val: rewardVal }, text: `Own ${targetCount} ${targetGen.name}` };
-                    } else if (type < 0.7) {
-                        let ips = 0;
-                        GENERATORS_DATA.forEach(g => { 
-                             if(this.state.generators[g.id] > 0) ips += this.getGenRevenue(g.id) / (g.cycleTime/1000); 
-                        });
-                        if (ips === 0) ips = 10;
-                        let targetCash = this.state.influence + (ips * 60);
-                        targetCash = Math.max(targetCash, 1000); 
-                        mission = { icon: "💰", type: 'cash', amount: targetCash, reward: { type: 'theory', val: 1 }, text: `Reach ${formatNumber(targetCash)}` };
-                    } else {
-                        mission = { icon: "📣", type: 'click', count: 50, current: 0, reward: { type: 'money', val: 500 }, text: "Fundraise 50 times" };
-                    }
-                } while (isDuplicate(mission) && attempts < 20);
+                if (rewardType === 'money') {
+                    mission.reward = { type: 'money', val: ips * 20 };
+                } else if (rewardType === 'theory') {
+                    mission.reward = { type: 'theory', val: this.state.level };
+                } else {
+                    mission.reward = { type: 'unhappiness', val: 10 }; // 10%
+                }
 
                 this.state.activeMissions[slot] = mission;
+                
+                // Set timer for slot 1
                 if (slot === 1) this.state.missionTimers[1] = Date.now() + this.missionConfig.midSlotDuration;
                 
                 this.renderMissions(); 
             }
 
             checkMissions() {
+                // If Stimulus Overlay is active, pause time check
+                if(this.state.stimulusActive) return;
+
                 const now = Date.now();
                 
-                // Slot 0 (Standard): Removed auto-claim
-
+                // Slot 0 (Standard)
+                
                 const timeSinceStart = now - this.levelStartTime;
                 
                 // Slot 1 (Timed)
                 if (!this.state.activeMissions[1]) {
                     const cooldown = this.state.missionCooldowns[1];
+                    
                     if (!cooldown) {
-                        if (timeSinceStart > this.missionConfig.midSlotUnlockTime) this.generateMission(1);
+                        // Check if it's time to unlock AND we aren't already animating
+                        if (timeSinceStart > this.missionConfig.midSlotUnlockTime) {
+                            if (!this.midSlotUnlocking) {
+                                this.triggerMidSlotUnlock(); // <--- CALL NEW ANIMATION FUNCTION
+                            }
+                        }
                     } else if (now > cooldown) {
                         this.generateMission(1);
                         this.state.missionCooldowns[1] = null;
                     }
                 } else {
-                    // MODIFIED: Only expire if time is up AND mission is NOT complete
-                    // If mission is complete, it stays until claimed
+                    // ... existing expiry logic ...
                     if (now > this.state.missionTimers[1] && !this.isMissionComplete(this.state.activeMissions[1])) {
                          this.state.activeMissions[1] = null;
                          this.state.missionCooldowns[1] = now + this.missionConfig.midSlotCooldown;
@@ -1224,25 +1628,71 @@
                     }
                 }
 
-                // Slot 2 (Ad): Removed auto-claim
+                // Slot 2 (Ad)
                 if (this.state.adSlotUnlocked) {
                     if (!this.state.activeMissions[2]) this.generateMission(2);
                 }
             }
+            triggerMidSlotUnlock() {
+                this.midSlotUnlocking = true;
+                
+                // 1. Find the lock icon in the DOM
+                const lockIcon = document.getElementById('mission-lock-icon');
+                
+                if (lockIcon) {
+                    // 2. Play Shake Animation
+                    lockIcon.classList.add('animate-lock-shake');
+                    
+                    // 3. After 1.5 seconds, explode/open
+                    setTimeout(() => {
+                        lockIcon.classList.remove('animate-lock-shake');
+                        lockIcon.classList.remove('fa-lock');
+                        lockIcon.classList.add('fa-unlock', 'animate-lock-open');
+                        
+                        // 4. After explosion finishes, generate mission
+                        setTimeout(() => {
+                            this.generateMission(1);
+                            this.midSlotUnlocking = false;
+                            this.showToast("New Mission Unlocked!");
+                        }, 400); // Wait for open animation
+                        
+                    }, 1500); // Duration of shake
+                } else {
+                    // Fallback if UI isn't rendered for some reason
+                    this.generateMission(1);
+                    this.midSlotUnlocking = false;
+                }
+            }
             isMissionComplete(m) {
                 if (!m) return false;
-                if (m.type === 'buy') return this.state.generators[m.target] >= m.count;
-                if (m.type === 'cash') return this.state.influence >= m.amount;
-                if (m.type === 'click') return m.current >= m.count;
+                // Incremental Action Quests
+                if (m.type === 'buy_generator' || m.type === 'spend_cash' || 
+                    m.type === 'spend_theory' || m.type === 'fundraise') {
+                    return (m.current || 0) >= m.count;
+                }
+                // State Check Quests
+                if (m.type === 'own_generators') return this.state.generators[m.target] >= m.count;
+                if (m.type === 'reach_unhappiness') return this.state.unhappiness >= m.count;
+                if (m.type === 'buy_property') return this.state.ownedProperties.includes(m.target);
+                if (m.type === 'hire_rep') return !!this.state.activeManagers[m.target]; // Checks state directly
+                
                 return false;
             }
             claimMission(slot) {
                 const m = this.state.activeMissions[slot];
+                // Handle Rewards
                 if (m.reward.type === 'money') this.addInfluence(m.reward.val);
                 if (m.reward.type === 'theory') this.addTheoryPoint(m.reward.val);
-                this.showToast("Mission Completed!");
+                if (m.reward.type === 'unhappiness') {
+                    // Reduce unhappiness by 10%
+                    const reduction = Math.floor(this.state.unhappiness * 0.1);
+                    this.state.unhappiness = Math.max(0, this.state.unhappiness - reduction);
+                    this.showToast(`Unhappiness Reduced by ${formatUnhappiness(reduction)}!`);
+                    this.updateHeader();
+                } else {
+                    this.showToast("Mission Completed!");
+                }
                 
-                // Track Stat
                 this.state.stats.quests++;
 
                 this.state.activeMissions[slot] = null;
@@ -1275,44 +1725,73 @@
             createMissionCard(container, slot) {
                 const m = this.state.activeMissions[slot];
                 const div = document.createElement('div');
-                // Default class
                 div.className = 'mission-card relative overflow-hidden cursor-pointer';
 
                 if (!m) {
-                    // ... (Existing Empty/Locked Logic) ...
                     if (slot === 1) {
                         const cooldown = this.state.missionCooldowns[1];
                         if (cooldown) {
                              const wait = Math.max(0, Math.ceil((cooldown - Date.now()) / 1000));
                              div.innerHTML = `<div class="text-xs text-teal-800 font-bold text-center">New Orders<br>in ${wait}s</div>`;
                         } else if (Date.now() - this.levelStartTime < this.missionConfig.midSlotUnlockTime) {
-                             div.innerHTML = `<div class="text-xs text-gray-500 font-bold"><i class="fas fa-clock"></i> Locked</div>`;
+                            // UPDATED: Added ID 'mission-lock-icon' and changed icon to fa-lock
+                            div.innerHTML = `
+                                <div class="flex flex-col items-center justify-center text-gray-500">
+                                    <i id="mission-lock-icon" class="fas fa-lock text-xl mb-1"></i> 
+                                    <div class="text-[10px] font-bold uppercase tracking-wider">Locked</div>
+                                </div>`;
                         }
                     } else div.innerHTML = `...`;
                 } else {
-                    // CHECK: Is it already claimable?
                     if (this.isMissionComplete(m)) {
-                        // CLAIMABLE STATE UI
                         div.className = 'mission-card bg-green-500 border-green-700 shadow-lg animate-pulse cursor-pointer flex flex-col items-center justify-center claim-mode';
                         div.onclick = (e) => { 
                             e.stopPropagation();
-                            // Add a little scale effect before claiming
                             div.style.transform = "scale(0.95)";
                             setTimeout(() => this.claimMission(slot), 100);
                         };
+                        
+                        // Render Reward Icon
+                        let rewardIcon = '💰';
+                        let rewardText = '';
+                        if (m.reward.type === 'money') {
+                            rewardIcon = '💰';
+                            rewardText = formatNumber(m.reward.val).replace('$','');
+                        } else if (m.reward.type === 'theory') {
+                            rewardIcon = '📘';
+                            rewardText = m.reward.val;
+                        } else if (m.reward.type === 'unhappiness') {
+                            rewardIcon = '🕊️';
+                            rewardText = "-10% 😡";
+                        }
+
                         div.innerHTML = `
                             <div class="text-white font-black text-lg drop-shadow-md mb-1">CLAIM!</div>
                             <div class="flex items-center justify-center bg-white bg-opacity-20 rounded-full px-3 py-1">
-                                <span class="text-xl mr-1">${m.reward.type === 'money' ? '💰' : '📘'}</span>
-                                <span class="text-white font-bold text-sm">${formatNumber(m.reward.val).replace('$','')}</span>
+                                <span class="text-xl mr-1">${rewardIcon}</span>
+                                <span class="text-white font-bold text-sm">${rewardText}</span>
                             </div>
                         `;
                     } else {
-                        // EXISTING PROGRESS UI
                         let progress = 0;
-                        if (m.type === 'buy') progress = Math.min(100, (this.state.generators[m.target] / m.count) * 100);
-                        if (m.type === 'cash') progress = Math.min(100, (this.state.influence / m.amount) * 100);
-                        if (m.type === 'click') progress = Math.min(100, (m.current / m.count) * 100);
+                        
+                        // --- PROGRESS BAR CALCULATION FIX ---
+                        if (m.type === 'buy_generator' || m.type === 'spend_cash' || 
+                            m.type === 'spend_theory' || m.type === 'fundraise') {
+                            progress = Math.min(100, ((m.current || 0) / m.count) * 100);
+                        } 
+                        else if (m.type === 'own_generators') {
+                            // Look at actual Owned Count, not mission current
+                            progress = Math.min(100, (this.state.generators[m.target] / m.count) * 100);
+                        }
+                        else if (m.type === 'reach_unhappiness') {
+                            // Look at actual Unhappiness
+                            progress = Math.min(100, (this.state.unhappiness / m.count) * 100);
+                        }
+                        else if (m.type === 'hire_rep' || m.type === 'buy_property') {
+                            // Binary progress
+                            progress = 0; 
+                        }
                         
                         let timerHtml = '';
                         if (slot === 1) {
@@ -1321,18 +1800,29 @@
                             if (timeLeft < 10000) timerClass += " bg-red-600 animate-pulse"; 
                             timerHtml = `<div class="${timerClass}">${formatTime(timeLeft)}</div>`;
                         }
-                        div.innerHTML = `${timerHtml}<div class="mission-icon">${m.icon || '⭐'}</div><div class="text-[9px] font-bold text-center leading-tight z-10 relative">${m.text}</div><div class="w-full bg-gray-300 h-1.5 mt-1 rounded-full overflow-hidden z-10 relative"><div class="bg-green-500 h-full" style="width: ${progress}%"></div></div><div class="text-[9px] text-teal-900 font-bold mt-0.5 z-10 relative">Reward: ${m.reward.type === 'money' ? '$' : '📘'}${formatNumber(m.reward.val).replace('$','')}</div>`;
+                        
+                        // Render Reward Preview
+                        let rewardDisplay = '';
+                        if (m.reward.type === 'money') rewardDisplay = '$' + formatNumber(m.reward.val).replace('$','');
+                        else if (m.reward.type === 'theory') rewardDisplay = '📘' + m.reward.val;
+                        else rewardDisplay = '-10% 😡';
+
+                        div.innerHTML = `${timerHtml}
+                            <div class="mission-icon">${m.icon || '⭐'}</div>
+                            <div class="text-[9px] font-bold text-center leading-tight z-10 relative">${m.text}</div>
+                            <div class="w-full bg-gray-300 h-1.5 mt-1 rounded-full overflow-hidden z-10 relative">
+                                <div class="bg-green-500 h-full" style="width: ${progress}%"></div>
+                            </div>
+                            <div class="text-[9px] text-teal-900 font-bold mt-0.5 z-10 relative">Reward: ${rewardDisplay}</div>`;
                     }
                 }
                 container.appendChild(div);
             }
 
+            // ... (Existing notification and modal methods) ...
             checkRepNotification() {
                 const notification = document.getElementById('rep-notification');
                 if (!notification) return;
-                // With dynamic costs, we can just check if theory points > 0 for now, 
-                // or we could get fancy and find the cheapest upgrade.
-                // Keeping it simple: if you have > 5, show it.
                 if (this.state.theoryPoints >= 5) {
                     notification.classList.remove('hidden');
                 } else {
@@ -1360,7 +1850,6 @@
                         const lvl = this.state.managerLevels[mgr.id] || 1;
                         const maxLvl = 10;
                         
-                        // RARITY COLORS
                         let rarityClass = "border-gray-200 bg-white";
                         let rarityBadge = "";
                         if (mgr.rarity === 'common') {
@@ -1384,7 +1873,6 @@
                         
                         let upgradeRow = "";
                         if (isHired) {
-                             // CALCULATE DYNAMIC COST
                              const upgCost = this.getManagerUpgradeCost(mgr, lvl);
                              const canAfford = this.state.theoryPoints >= upgCost;
                              
@@ -1393,7 +1881,7 @@
                                     <div class="text-xs text-gray-800 font-bold">Level ${lvl}/${maxLvl}</div>
                                     <button class="text-[10px] font-bold px-2 py-1 rounded shadow disabled:opacity-50 transition ${canAfford ? 'bg-blue-500 hover:bg-blue-400 text-white' : 'bg-gray-400 text-gray-200'}" 
                                             ${(!canAfford || lvl >= maxLvl) ? 'disabled' : ''}
-                                            onclick="game.upgradeManager('${mgr.id}', '${gen.id}')">
+                                            onclick="game.upgradeManager('${mgr.id}', '${gen.id}', event)">
                                         ${lvl >= maxLvl ? 'MAX' : `Upgrade (${upgCost} 📘)`}
                                     </button>
                                 </div>
@@ -1402,7 +1890,7 @@
                         div.innerHTML = `
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center gap-3">
-                                    <img src="${mgr.img}" class="w-10 h-10 rounded-full border-2 border-teal-500 bg-white">
+                                    <img id="mgr-img-${mgr.id}" src="${mgr.img}" class="w-10 h-10 rounded-full border-2 border-teal-500 bg-white transition-opacity duration-300">
                                     <div>
                                         <div class="font-bold text-gray-800 text-sm flex items-center">${mgr.name} ${rarityBadge}</div>
                                         <div class="text-xs font-bold text-orange-600">Current: x${mgr.mult * Math.pow(2, lvl-1)}</div>
@@ -1461,6 +1949,7 @@
                 }
             }
 
+            // ... (Prestige and Ladder logic) ...
             checkPrestigeCondition() {
                 if (this.prestigePending) return;
                 if (this.state.unhappiness >= this.getUnhappinessThreshold()) {
@@ -1497,15 +1986,9 @@
                 const stepsContainer = document.getElementById('ladder-steps');
                 stepsContainer.innerHTML = '';
                 const currentLvl = this.state.level;
-                
-                // Show exactly 5 levels: Current, +1, +2, +3, +4
                 const levelsToShow = 5; 
-                
-                // Store references to steps to measure distance later
                 const stepElements = [];
 
-                // Because of flex-direction: column-reverse, 
-                // the First element appended appears at the BOTTOM.
                 for (let i = 0; i < levelsToShow; i++) {
                     const l = currentLvl + i;
                     const step = document.createElement('div');
@@ -1513,11 +1996,9 @@
                     step.innerText = l;
                     
                     if (i === 0) {
-                        // This is the current level (bottom-most)
-                        step.classList.add('active-step'); // Higher z-index
+                        step.classList.add('active-step'); 
                         const avatar = document.createElement('div');
                         avatar.className = 'ladder-avatar';
-                        // Use current avatar for climbing
                         const avatarSrc = document.getElementById('avatar-img').src;
                         avatar.innerHTML = `<img src="${avatarSrc}" class="w-full h-full object-cover">`;
                         avatar.id = 'climbing-avatar';
@@ -1530,19 +2011,12 @@
                 
                 setTimeout(() => {
                     const avatar = document.getElementById('climbing-avatar');
-                    
-                    // Calculate dynamic jump distance based on actual screen rendering
                     if (stepElements.length >= 2) {
-                        const currentBox = stepElements[0].getBoundingClientRect(); // Bottom box
-                        const nextBox = stepElements[1].getBoundingClientRect();    // One above
-                        // Calculate distance from bottom of current to bottom of next
-                        // Since coordinates start at top, nextBox.bottom will be smaller (higher up) than currentBox.bottom
+                        const currentBox = stepElements[0].getBoundingClientRect(); 
+                        const nextBox = stepElements[1].getBoundingClientRect();    
                         const distance = currentBox.bottom - nextBox.bottom;
-                        
-                        // Current bottom is 5px. We add the distance between boxes.
                         avatar.style.bottom = (5 + distance) + 'px'; 
                     } else {
-                        // Fallback if calculation fails
                         avatar.style.bottom = '125px';
                     }
                 }, 500);
@@ -1596,9 +2070,8 @@
                 const val = 1 + (totalIPS * 0.05);
                 this.addInfluence(val);
                 
-                // Track Stat
                 this.state.stats.taps++;
-
+                this.updateMissionProgress('fundraise', 1);
                 this.spawnFloatText(e.clientX, e.clientY, `+${formatNumber(val)}`);
                 for (let i = 0; i < 3; i++) { 
                     if (this.state.activeMissions[i] && this.state.activeMissions[i].type === 'click') {
@@ -1613,7 +2086,6 @@
                 this.state.influence += amt;
                 this.state.lifetime += amt;
                 
-                // Track Stat
                 if (this.state.influence > this.state.stats.maxCash) {
                     this.state.stats.maxCash = this.state.influence;
                 }
@@ -1637,6 +2109,10 @@
                 this.state.unhappiness += amt;
                 this.updateHeader(); 
                 this.checkPrestigeCondition();
+                // Force mission check if we have an anger mission
+                if (Object.values(this.state.activeMissions).some(m => m && m.type === 'reach_unhappiness')) {
+                    this.renderMissions();
+                }
             }
             addTheoryPoint(amt) {
                 this.state.theoryPoints += amt;
@@ -1687,7 +2163,6 @@
                     this.state.influence -= cost;
                     this.state.generators[id]++;
                     
-                    // Track Stat
                     this.state.stats.upgrades++;
 
                     const newMult = this.getGenMultiplier(id);
@@ -1702,6 +2177,12 @@
                         const icon = card.querySelector('.emoji');
                         this.animateTheoryPointBurst(icon, 5);
                     }
+
+                    // QUEST UPDATES
+                    this.updateMissionProgress('spend_cash', cost);
+                    this.updateMissionProgress('buy_generator', 1, id);
+                    this.renderMissions(); // Force render for 'own_generators' quests
+
                 } else {
                     if(e) { this.showContextToast(e.target, "Not enough funds!"); }
                 }
@@ -1758,6 +2239,9 @@
                         this.processProduction(dt);
                         this.updateProgressBars();
                         this.checkMissions(); 
+                        // NEW: Check stimulus
+                        this.checkStimulus();
+                        
                         this.updateMissionVisuals();
                         this.updateHeader(); 
                     }
@@ -1778,28 +2262,48 @@
 
                     if(m) {
                         let progress = 0;
-                        if (m.type === 'buy') progress = Math.min(100, (this.state.generators[m.target] / m.count) * 100);
-                        else if (m.type === 'cash') progress = Math.min(100, (this.state.influence / m.amount) * 100);
-                        else if (m.type === 'click') progress = Math.min(100, (m.current / m.count) * 100);
+                        
+                        // --- PROGRESS BAR CALCULATION FIX ---
+                        if (m.type === 'buy_generator' || m.type === 'spend_cash' || 
+                            m.type === 'spend_theory' || m.type === 'fundraise') {
+                            progress = Math.min(100, ((m.current || 0) / m.count) * 100);
+                        } 
+                        else if (m.type === 'own_generators') {
+                            // Look at actual Owned Count, not mission current
+                            progress = Math.min(100, (this.state.generators[m.target] / m.count) * 100);
+                        }
+                        else if (m.type === 'reach_unhappiness') {
+                            // Look at actual Unhappiness
+                            progress = Math.min(100, (this.state.unhappiness / m.count) * 100);
+                        }
+                        else if (m.type === 'hire_rep' || m.type === 'buy_property') {
+                            // Binary progress
+                            progress = 0; 
+                        }
                         
                         const bar = card.querySelector('.bg-green-500');
                         if(bar) bar.style.width = `${progress}%`;
                         
-                        // VISUAL UPDATE TRIGGER
-                        // If mission just completed and we aren't showing claim UI yet, re-render the mission cards
                         if(progress >= 100) {
                             if(!card.classList.contains('claim-mode')) {
                                 this.renderMissions();
-                                return; // Break the loop since we rebuilt the DOM
+                                return; 
                             }
                         }
 
                         if(i === 1 && !card.classList.contains('claim-mode')) {
                             const timerEl = card.querySelector('.mission-timer');
                             if(timerEl) {
-                                const timeLeft = Math.max(0, (this.state.missionTimers[1] - Date.now()));
-                                timerEl.innerText = formatTime(timeLeft);
-                                if(timeLeft < 10000) timerEl.classList.add('bg-red-600', 'animate-pulse');
+                                // If stimulus active, display "PAUSED" or just current time without counting down
+                                if(this.state.stimulusActive) {
+                                    timerEl.innerText = "PAUSED";
+                                    timerEl.classList.add('bg-gray-500');
+                                } else {
+                                    const timeLeft = Math.max(0, (this.state.missionTimers[1] - Date.now()));
+                                    timerEl.innerText = formatTime(timeLeft);
+                                    timerEl.classList.remove('bg-gray-500');
+                                    if(timeLeft < 10000) timerEl.classList.add('bg-red-600', 'animate-pulse');
+                                }
                             }
                         }
                     } else if(i === 1) {
@@ -1910,31 +2414,48 @@
                 });
                 modal.classList.remove('hidden');
             }
-            upgradeManager(mgrId, genId) {
+            upgradeManager(mgrId, genId, event) {
                 // Find Manager details to get cost
                 const industry = MANAGER_OPTIONS[genId];
                 const mgr = industry.find(m => m.id === mgrId);
                 const currentLvl = this.state.managerLevels[mgrId] || 1;
                 const cost = this.getManagerUpgradeCost(mgr, currentLvl);
 
-                if(this.state.theoryPoints >= cost) { 
+                if (this.state.theoryPoints >= cost) {
+                    // 1. Deduct Cost & Upgrade Logic
                     this.state.theoryPoints -= cost;
-                    if(!this.state.managerLevels[mgrId]) this.state.managerLevels[mgrId] = 1;
+                    this.updateMissionProgress('spend_theory', cost);
+                    if (!this.state.managerLevels[mgrId]) this.state.managerLevels[mgrId] = 1;
                     this.state.managerLevels[mgrId]++;
                     
-                    // Track Stat
-                    this.state.stats.managersUpgraded++;
+                    // 2. Calculate values for animation
+                    const oldMult = mgr.mult * Math.pow(2, currentLvl - 1);
+                    const newMult = mgr.mult * Math.pow(2, currentLvl);
 
+                    // 3. Update Stats & UI Header
+                    this.state.stats.managersUpgraded++;
                     this.updateHeader();
-                    this.updateCardUI(genId);
-                    this.openAllRepsModal();
-                    this.showToast("Rep Upgraded! Bonus Doubled.");
+
+                    // 4. Trigger the Animation
+                    this.animateManagerUpgradeEffect(mgrId, mgr.img, oldMult, newMult, () => {
+                        // Callback: Runs AFTER animation finishes
+                        this.updateCardUI(genId);
+                        this.openAllRepsModal(); 
+                        this.showToast("Upgrade Complete!");
+                    }); // <--- This ); was missing/misplaced in your code
+                } else {
+                    if(event && event.target) this.showContextToast(event.target, "Need more Theory!", "info");
                 }
             }
             closeModal(modalId) { document.getElementById(modalId).classList.add('hidden'); }
             hireManager(industryId, mgrId, cost, e) {
                 if (this.state.influence >= cost) {
                     this.state.influence -= cost;
+                    
+                    // QUEST UPDATE
+                    this.updateMissionProgress('spend_cash', cost);
+                    this.updateMissionProgress('hire_rep', 1, industryId);
+                    
                     this.state.activeManagers[industryId] = mgrId;
                     
                     // Track Stat
@@ -2226,7 +2747,6 @@
                         if(this.state.missionCount === undefined) this.state.missionCount = 0;
                         if(this.state.adSlotUnlocked === undefined) this.state.adSlotUnlocked = false;
                         
-                        // Ensure stats exist
                         if(!this.state.stats) {
                             this.state.stats = {
                                 taps: 0,
@@ -2237,13 +2757,151 @@
                                 maxCash: 0
                             };
                         }
-                        // Ensure properties exist
                         if(!this.state.ownedProperties) this.state.ownedProperties = [];
+                        
+                        // Stimulus checks
+                        if(!this.state.lastStimulusTime) this.state.lastStimulusTime = Date.now();
+                        this.state.stimulusActive = false; 
 
                     } catch(e) { console.log('Save corrupted'); }
                 } else {
                     this.state.levelStartTime = Date.now();
                 }
+            }
+            // REPLACES THE PREVIOUS animateManagerUpgradeEffect
+            animateManagerUpgradeEffect(mgrId, imgSrc, oldVal, newVal, onComplete) {
+                const sourceImg = document.getElementById(`mgr-img-${mgrId}`);
+                if (!sourceImg) { if(onComplete) onComplete(); return; }
+
+                // 1. Hide original temporarily
+                sourceImg.style.opacity = '0';
+
+                // 2. Calculate Geometry for High-Res Scaling (5x)
+                const startRect = sourceImg.getBoundingClientRect();
+                const targetScale = 5; 
+                const bigWidth = startRect.width * targetScale;
+                const bigHeight = startRect.height * targetScale;
+
+                const clone = document.createElement('img');
+                clone.src = imgSrc;
+                clone.className = 'flying-manager-icon';
+                
+                // Set physical size to the "Big" target size (High Quality)
+                clone.style.width = `${bigWidth}px`;
+                clone.style.height = `${bigHeight}px`;
+                
+                // Position anchor at top-left
+                clone.style.left = `${startRect.left}px`;
+                clone.style.top = `${startRect.top}px`;
+                clone.style.transformOrigin = 'top left';
+                
+                // Scale DOWN to match the starting 1x size
+                clone.style.transform = `scale(${1/targetScale})`; 
+                
+                document.body.appendChild(clone);
+
+                // 3. Create Text Container
+                const textContainer = document.createElement('div');
+                textContainer.className = 'upgrade-text-box';
+                textContainer.innerHTML = `
+                    <div class="upgrade-label">Multiplier</div>
+                    <div class="upgrade-value">x${oldVal.toLocaleString()}</div>
+                `;
+                textContainer.style.left = '50%';
+                textContainer.style.top = '60%'; 
+                textContainer.style.transform = 'translate(-50%, 0) scale(0.5)';
+                document.body.appendChild(textContainer);
+
+                // 4. ANIMATION SEQUENCE
+                requestAnimationFrame(() => {
+                    // Enable transition for the movement
+                    clone.style.transition = 'transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                    
+                    // Calculate Center Position
+                    const viewportW = window.innerWidth;
+                    const viewportH = window.innerHeight;
+                    const targetX = (viewportW - bigWidth) / 2;
+                    const targetY = (viewportH - bigHeight) / 2;
+                    const deltaX = targetX - startRect.left;
+                    const deltaY = targetY - startRect.top;
+
+                    // Move to center and scale to 1 (Actual 5x size)
+                    clone.style.transform = `translate(${deltaX}px, ${deltaY}px) scale(1)`;
+
+                    setTimeout(() => {
+                        textContainer.classList.add('visible');
+                        
+                        // Phase 2: Smoother Count Up
+                        this.animateCountUpVal(textContainer.querySelector('.upgrade-value'), oldVal, newVal);
+
+                        // Phase 3: Return
+                        // UPDATED: Increased wait time to 2500ms to match the new 2s counter
+                        setTimeout(() => {
+                            textContainer.classList.remove('visible');
+                            
+                            const currentSource = document.getElementById(`mgr-img-${mgrId}`);
+                            const finalRect = currentSource ? currentSource.getBoundingClientRect() : startRect;
+                            const backDeltaX = finalRect.left - startRect.left;
+                            const backDeltaY = finalRect.top - startRect.top;
+                            
+                            // Fly back and scale down
+                            clone.style.transform = `translate(${backDeltaX}px, ${backDeltaY}px) scale(${1/targetScale})`;
+                            
+                            setTimeout(() => {
+                                if(currentSource) currentSource.style.opacity = '1';
+                                clone.remove();
+                                textContainer.remove();
+                                if (onComplete) onComplete();
+                            }, 500);
+
+                        }, 1500); // <--- CHANGED: Increased from 1200 to 2500
+
+                    }, 300); 
+                });
+            }
+
+            // REPLACES THE PREVIOUS animateCountUpVal
+            animateCountUpVal(element, start, end) {
+                // Fixed duration of 2 seconds for the rolling numbers
+                const duration = 500; 
+                
+                let startTime = null;
+                const step = (timestamp) => {
+                    if (!startTime) startTime = timestamp;
+                    const progress = Math.min((timestamp - startTime) / duration, 1);
+                    
+                    // Smooth ease-out for the numbers rolling
+                    const ease = 1 - Math.pow(1 - progress, 4);
+                    const current = Math.floor(ease * (end - start) + start);
+                    
+                    element.innerText = "x" + current.toLocaleString();
+                    
+                    if (progress < 1) {
+                        window.requestAnimationFrame(step);
+                    } else {
+                        // --- ANIMATION FINISH ---
+                        element.innerText = "x" + end.toLocaleString();
+                        
+                        // 1. Apply a "Spring" transition to smooth the pop
+                        // cubic-bezier(0.34, 1.56, 0.64, 1) creates a bouncy overshoot effect
+                        element.style.transition = "transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.3s ease, text-shadow 0.3s ease";
+                        
+                        // 2. Trigger the Pop (Scale Up)
+                        requestAnimationFrame(() => {
+                            element.style.transform = "scale(1.5)"; // Grow to 1.5x
+                            element.style.color = "#ffffff";        // Flash white
+                            element.style.textShadow = "0 0 30px #ffffff"; // Strong glow
+                        });
+                        
+                        // 3. Settle back down gently
+                        setTimeout(() => {
+                            element.style.transform = "scale(1)";   // Return to normal size
+                            element.style.color = "#FACC15";        // Return to Gold
+                            element.style.textShadow = "0 2px 0 #000";
+                        }, 600); // Wait for the pop to peak before settling
+                    }
+                };
+                window.requestAnimationFrame(step);
             }
             hardReset() {
                 if(confirm("Restart the revolution?")) {

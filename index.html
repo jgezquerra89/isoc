@@ -1251,9 +1251,12 @@
 
                 if(this.state.influence >= prop.cost) {
                     this.state.influence -= prop.cost;
+                    // Update state first
+                    this.state.ownedProperties.push(id);
+
+                    // Then check quests
                     this.updateMissionProgress('spend_cash', prop.cost);
                     this.updateMissionProgress('buy_property', 1, id);
-                    this.state.ownedProperties.push(id);
                     this.updateHeader();
                     this.openPropertiesModal(); 
                     this.showToast(`Purchased ${prop.name}!`);
@@ -2452,11 +2455,12 @@
                 if (this.state.influence >= cost) {
                     this.state.influence -= cost;
                     
+                    // UPDATE STATE First
+                    this.state.activeManagers[industryId] = mgrId;
+
                     // QUEST UPDATE
                     this.updateMissionProgress('spend_cash', cost);
                     this.updateMissionProgress('hire_rep', 1, industryId);
-                    
-                    this.state.activeManagers[industryId] = mgrId;
                     
                     // Track Stat
                     this.state.stats.managersHired++;

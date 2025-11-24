@@ -603,6 +603,28 @@
 .animate-lock-open {
     animation: lockOpen 0.5s forwards ease-out;
 }
+/* MAYOR STYLES */
+        .mayor-left { justify-content: flex-start; }
+        .mayor-right { justify-content: flex-end; }
+        
+        /* Flip image when on right */
+        .mayor-right #mayor-wrapper img { transform: scaleX(-1); }
+        .mayor-right #mayor-wrapper img:hover { transform: scaleX(-1) scale(1.05); }
+
+        /* Bubble positioning for right side */
+        .mayor-right #mayor-bubble {
+            right: 0; left: auto; transform-origin: bottom right;
+        }
+        .mayor-right #mayor-bubble-tail { right: 32px; left: auto; }
+        
+        /* Animation States */
+        .mayor-slide-in {
+            transform: translateY(10%) !important; 
+        }
+        .bubble-visible {
+            opacity: 1 !important;
+            transform: scale(1) !important;
+        }
     </style>
 </head>
 <body class="h-screen flex flex-col text-gray-900">
@@ -848,7 +870,22 @@
     </div>
 
     <div id="toast-container" class="fixed bottom-24 left-1/2 transform -translate-x-1/2 flex flex-col gap-2 pointer-events-none z-50 w-full max-w-xs px-4"></div>
-
+    <div id="mayor-overlay" class="fixed inset-0 z-[60] hidden cursor-pointer" onclick="game.mayor.hide()">
+        <div id="mayor-slider" class="absolute bottom-0 w-full flex items-end transition-transform duration-500 translate-y-full pointer-events-none">
+            
+            <div id="mayor-wrapper" class="relative w-48 h-48 mx-4 mb-0 transition-all duration-300 pointer-events-auto">
+                <div id="mayor-bubble" class="absolute -top-32 w-64 bg-white border-4 border-gray-800 rounded-xl p-4 shadow-xl opacity-0 transition-opacity duration-300 transform scale-95 origin-bottom-left">
+                    <p id="mayor-text" class="font-game text-gray-900 text-sm leading-snug">
+                        Default text here.
+                    </p>
+                    <div id="mayor-bubble-tail" class="absolute -bottom-3 left-8 w-6 h-6 bg-white border-b-4 border-r-4 border-gray-800 transform rotate-45"></div>
+                </div>
+                
+                <img id="mayor-img" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cpath d='M60,150 Q100,200 140,150 L140,200 L60,200 Z' fill='%231a1a1a'/%3E%3Ccircle cx='100' cy='100' r='50' fill='%23ffcc80' stroke='%231a1a1a' stroke-width='3'/%3E%3Crect x='60' y='95' width='80' height='10' fill='%231a1a1a'/%3E%3Ccircle cx='85' cy='90' r='5' fill='%231a1a1a'/%3E%3Ccircle cx='115' cy='90' r='5' fill='%231a1a1a'/%3E%3Cpath d='M90,120 Q100,140 110,120' fill='none' stroke='%231a1a1a' stroke-width='3'/%3E%3Cpath d='M40,60 L160,60 L140,20 L60,20 Z' fill='%231a1a1a'/%3E%3Crect x='50' y='50' width='100' height='15' fill='%23d32f2f'/%3E%3Cpath d='M100,20 L100,10 M100,10 L110,10 M100,10 L90,10' stroke='%23ffd700' stroke-width='2'/%3E%3Cpath d='M70,160 L130,200' stroke='%23d32f2f' stroke-width='10'/%3E%3C/svg%3E" 
+                     class="w-full h-full object-contain filter drop-shadow-lg hover:scale-105 transition-transform">
+            </div>
+        </div>
+    </div>
     <template id="generator-template">
         <div class="bg-teal-700 rounded-xl p-2 shadow-[0_4px_0_rgba(0,0,0,0.2)] border-2 border-teal-900 relative overflow-hidden group">
             <div class="flex items-center gap-2 mb-2 manual-trigger-area">
@@ -988,9 +1025,61 @@
             let s = totalSec % 60;
             return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
         }
+        class MayorSystem {
+        constructor() {
+            this.overlay = document.getElementById('mayor-overlay'); 
+            this.slider = document.getElementById('mayor-slider');   
+            this.wrapper = document.getElementById('mayor-wrapper');
+            this.bubble = document.getElementById('mayor-bubble');
+            this.text = document.getElementById('mayor-text');
+            this.timer = null;
+        }
 
+        speak(message, side = 'left', duration = 0) {
+            // 1. Setup Position
+            this.slider.classList.remove('mayor-left', 'mayor-right');
+            this.slider.classList.add(side === 'right' ? 'mayor-right' : 'mayor-left');
+            this.text.innerText = message;
+
+            // 2. Show Overlay (Captures clicks)
+            this.overlay.classList.remove('hidden');
+
+            // 3. Animate Slide In
+            requestAnimationFrame(() => {
+                this.slider.classList.remove('translate-y-full');
+                this.slider.classList.add('mayor-slide-in');
+            });
+
+            // 4. Pop Bubble
+            setTimeout(() => {
+                this.bubble.classList.add('bubble-visible');
+            }, 300);
+
+            // 5. Auto-hide timer
+            if (this.timer) clearTimeout(this.timer);
+            if (duration > 0) {
+                this.timer = setTimeout(() => this.hide(), duration);
+            }
+        }
+
+        hide() {
+            if(this.overlay.classList.contains('hidden')) return;
+
+            this.bubble.classList.remove('bubble-visible');
+            
+            // Slide down
+            this.slider.classList.remove('mayor-slide-in');
+            this.slider.classList.add('translate-y-full');
+
+            // Wait for animation, then hide overlay
+            setTimeout(() => {
+                this.overlay.classList.add('hidden');
+            }, 500);
+        }
+    }
         class Game {
             constructor() {
+                this.mayor = new MayorSystem();
                 this.state = {
                     influence: 0,
                     unhappiness: 0,
@@ -1471,7 +1560,7 @@
                         this.renderMissions(); return;
                     }
                     if (this.state.missionCount === 1) {
-                        this.state.activeMissions [slot] = { type: 'buy_generator', target: 'taxes', count: 5, current: 0, reward: { type: 'money', val: ips * 20}, text: "Buy 5 Tax Collection", icon: "💰"};
+                        this.state.activeMissions[slot] = { type: 'buy_generator', target: 'taxes', count: 5, current: 0, reward: { type: 'money', val: ips * 20}, text: "Buy 5 Tax Collection", icon: "💰"};
                         this.renderMissions(); return;
                     }
                     if (this.state.missionCount === 2) {
@@ -1487,89 +1576,143 @@
                 // --- PROCEDURAL QUEST GENERATION ---
                 // Balancing: 45s of IPS (Standard) or 60s (Time Limited Slot 1)
                 const duration = (slot === 1) ? 60 : 45; 
-                const targetVal = ips * duration;
+                const targetVal = Math.max(100, ips * duration);
 
-                // Filter available types based on game state
-                const types = ['spend_cash', 'spend_theory', 'buy_generator', 'own_generators', 'reach_unhappiness', 'fundraise'];
+                // 1. AFFORDABLE LISTS
+                // Generators must cost less than 2x budget
+                let affordableGens = GENERATORS_DATA.filter(g => this.getGenCost(g.id) <= targetVal * 2);
                 
-                const unownedProps = PROPERTIES_DATA.filter(p => !this.state.ownedProperties.includes(p.id));
-                if (unownedProps.length > 0) types.push('buy_property');
-                
-                const unhiredReps = Object.keys(MANAGER_OPTIONS).filter(k => !this.state.activeManagers[k]);
-                if (unhiredReps.length > 0) types.push('hire_rep');
+                // FIX: Changed comma to dot, and Capital R Reduce to lowercase reduce
+                if (affordableGens.length === 0) {
+                    // Fallback if nothing is affordable
+                    affordableGens = [GENERATORS_DATA.reduce((prev,curr) => this.getGenCost(prev.id) < this.getGenCost(curr.id) ? prev : curr)];
+                }
 
+                // Properties: Must cost less than 4x budget
+                const affordableProps = PROPERTIES_DATA.filter(p => !this.state.ownedProperties.includes(p.id) && p.cost <= targetVal * 4);
+
+                // Reps: Must cost less than 2x budget
+                const affordableReps = Object.keys(MANAGER_OPTIONS).filter(k => {
+                    if (this.state.activeManagers[k]) return false;
+                    const mgr = MANAGER_OPTIONS[k][0];
+                    return mgr.cost <= targetVal * 2;
+                });
+
+                // 2. BUILD VALID QUEST TYPES BASED ON AFFORDABILITY
+                const types = ['spend_cash', 'spend_theory', 'reach_unhappiness', 'fundraise'];
+                if (affordableGens.length > 0) {
+                    types.push('buy_generator');
+                    types.push('own_generators');
+                }
+
+                // Only Add these types if we actually found something affordable
+                if (affordableProps.length > 0) types.push('buy_property');
+                if (affordableReps.length > 0) types.push('hire_rep');
+
+                // 3. PICK TYPE
                 const selectedType = types[Math.floor(Math.random() * types.length)];
                 mission.type = selectedType;
 
-                // --- TARGET CONFIGURATION ---
+                // 4. CONFIGURE TARGETS
+                // FIX: Changed all single quotes ' to backticks ` for template literals
                 if (selectedType === 'spend_cash') {
                     mission.count = Math.floor(targetVal);
                     mission.current = 0;
                     mission.text = `Spend $${formatNumber(mission.count)}`;
                     mission.icon = "💸";
-                } 
+                }
                 else if (selectedType === 'spend_theory') {
-                    mission.count = Math.max(1, Math.floor(this.state.level)); 
+                    // 1. Calculate the range based on actual Reps
+                    const minCost = 5;
+                    let maxCost = 5;
+
+                    // Iterate through hired managers to find the most expensive upgrade available
+                    Object.keys(this.state.activeManagers).forEach(genId => {
+                        const mgrId = this.state.activeManagers[genId];
+                        if (mgrId) {
+                            // Find manager data
+                            const opts = MANAGER_OPTIONS[genId];
+                            const mgr = opts.find(m => m.id === mgrId);
+                            // Get current level
+                            const lvl = this.state.managerLevels[mgrId] || 1;
+                            // Calculate cost for NEXT upgrade
+                            const cost = this.getManagerUpgradeCost(mgr, lvl);
+                            if (cost > maxCost) maxCost = cost;
+                        }
+                    });
+
+                    // 2. Randomize between Min (5) and Max (Current highest upgrade cost)
+                    // This ensures the quest is always relevant but achievable
+                    const range = maxCost - minCost;
+                    const randomAdd = Math.floor(Math.random() * (range + 1)); 
+                    // Snap to multiples of 5 for cleaner numbers
+                    let amount = minCost + randomAdd;
+                    amount = Math.ceil(amount / 5) * 5;
+
+                    mission.count = amount;
                     mission.current = 0;
                     mission.text = `Spend ${mission.count} Theory`;
                     mission.icon = "📘";
-                } 
+                }
                 else if (selectedType === 'buy_generator') {
-                    // Pick random generator
-                    const gen = GENERATORS_DATA[Math.floor(Math.random() * GENERATORS_DATA.length)];
-                    const cost = this.getGenCost(gen.id);
-                    // Calculate how many we can buy for targetVal (min 1)
-                    let amount = Math.max(1, Math.floor(targetVal / Math.max(1, cost)));
+                    const gen = affordableGens[Math.floor(Math.random() * affordableGens.length)];
+                    const cost = Math.max(1, this.getGenCost(gen.id));
+                    let amount = Math.max(1, Math.floor(targetVal / cost));
+                    amount = Math.min(amount, 20); // cap at 20
+                    
                     mission.target = gen.id;
                     mission.count = amount;
                     mission.current = 0;
                     mission.text = `Buy ${amount} ${gen.name}`;
                     mission.icon = gen.icon;
-                } 
+                }
                 else if (selectedType === 'own_generators') {
-                    const gen = GENERATORS_DATA[Math.floor(Math.random() * GENERATORS_DATA.length)];
-                    const cost = this.getGenCost(gen.id);
-                    let amount = Math.max(1, Math.floor(targetVal / Math.max(1, cost)));
+                    const gen = affordableGens[Math.floor(Math.random() * affordableGens.length)];
+                    // FIX: Changed gen_id to gen.id
+                    const cost = Math.max(1, this.getGenCost(gen.id));
+                    let amount = Math.max(1, Math.floor(targetVal / cost));
+                    amount = Math.min(amount, 10);
+
                     mission.target = gen.id;
                     mission.count = this.state.generators[gen.id] + amount;
+                    // FIX: Changed gen_name to gen.name
                     mission.text = `Own ${mission.count} ${gen.name}`;
                     mission.icon = gen.icon;
-                } 
+                }
                 else if (selectedType === 'reach_unhappiness') {
-                    // Estimate unhappiness growth
                     let unhPerSec = 0;
-                    GENERATORS_DATA.forEach(g => { 
+                    GENERATORS_DATA.forEach(g => {
                         if(this.state.generators[g.id]>0) unhPerSec += this.getGenUnhappiness(g.id) / (g.cycleTime/1000);
                     });
-                    // Target is current + projected growth
+                    if(unhPerSec === 0) unhPerSec = 1;
                     const targetUnh = this.state.unhappiness + (unhPerSec * duration);
                     mission.count = Math.max(this.state.unhappiness + 100, Math.floor(targetUnh));
                     mission.text = `Reach ${formatUnhappiness(mission.count)} Anger`;
                     mission.icon = "😡";
-                } 
+                }
                 else if (selectedType === 'buy_property') {
-                    const prop = unownedProps[Math.floor(Math.random() * unownedProps.length)];
+                    const prop = affordableProps[Math.floor(Math.random() * affordableProps.length)];
                     mission.target = prop.id;
+                    mission.count = 1;
                     mission.text = `Buy ${prop.name}`;
                     mission.icon = prop.icon;
-                } 
+                }
                 else if (selectedType === 'fundraise') {
-                    mission.count = 60; // Fixed count for better UX
+                    mission.count = 60;
                     mission.current = 0;
                     mission.text = `Fundraise ${mission.count} Times`;
                     mission.icon = "📣";
-                } 
+                }
                 else if (selectedType === 'hire_rep') {
-                    const repId = unhiredReps[Math.floor(Math.random() * unhiredReps.length)];
+                    const repId = affordableReps[Math.floor(Math.random() * affordableReps.length)];
                     const genName = GENERATORS_DATA.find(g => g.id === repId).name;
                     mission.target = repId;
+                    mission.count = 1;
                     mission.text = `Hire ${genName} Rep`;
                     mission.icon = "👔";
                 }
 
                 // --- REWARD LOGIC ---
-                // Slot 0: 50% Cash, 50% Theory
-                // Slot 1/2: 40% Cash, 40% Theory, 20% Unhappiness
                 let rnd = Math.random();
                 let rewardType = 'money';
                 
@@ -1707,11 +1850,31 @@
             renderMissions() {
                 const container = document.getElementById('mission-container');
                 container.innerHTML = '';
+                
+                // Check if tutorial (fixed quest line) is done. 
+                // There are 4 fixed quests (0 to 3), so missionCount must be >= 4.
+                const isTutorialFinished = this.state.missionCount >= 4;
+
                 this.createMissionCard(container, 0);
                 this.createMissionCard(container, 1);
-                if (this.state.adSlotUnlocked) {
+
+                // LOGIC CHANGE: Handle Slot 2 (Ad Slot) based on tutorial progress
+                if (!isTutorialFinished) {
+                    // Locked State: Tutorial in progress
+                    const lockedCard = document.createElement('div');
+                    lockedCard.className = 'mission-card mission-locked flex flex-col items-center justify-center bg-gray-200 border-gray-400 shadow-inner opacity-60';
+                    lockedCard.innerHTML = `
+                        <div class="text-gray-500 text-xl mb-1"><i class="fas fa-lock"></i></div>
+                        <div class="text-[9px] font-black text-gray-600 uppercase tracking-wider">LOCKED</div>
+                    `;
+                    container.appendChild(lockedCard);
+                } 
+                else if (this.state.adSlotUnlocked) {
+                    // Unlocked and active
                     this.createMissionCard(container, 2);
-                } else {
+                } 
+                else {
+                    // Tutorial done, show "Watch Ad" button
                     const adCard = document.createElement('div');
                     adCard.className = 'mission-card mission-card-locked-ad flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 transition shadow-sm';
                     adCard.onclick = () => this.watchAd('mission');
@@ -1965,6 +2128,10 @@
                 document.getElementById('prestige-bonus-display').innerText = `Production x${this.getNextLevelMultiplier()}`;
                 document.getElementById('next-level-display').innerText = this.state.level + 1;
                 modal.classList.remove('hidden');
+                this.mayor.speak(
+                "I'm sure our socialist policies will work on our next city! Let's try again... and make a buck or two!",
+                "left"
+                );
             }
             closePrestigeModal() {
                 if (this.state.unhappiness >= this.getUnhappinessThreshold()) {
@@ -1973,6 +2140,7 @@
                 }
                 this.prestigePending = false;
                 document.getElementById('prestige-modal').classList.add('hidden');
+                this.mayor.hide();
             }
             startPrestigeSequence() {
                 document.getElementById('prestige-modal').classList.add('hidden');
